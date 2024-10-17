@@ -1,18 +1,31 @@
 package com.example.kamlib.presentation.view
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CameraManager
 import androidx.core.app.ActivityCompat
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 
-class CameraManagerHelper {
-
+class CameraManagerHelper(
+    context: Context,
+    private val isFrontCamera: Boolean = false,
+    private val scope: CoroutineScope, // Use CoroutineScope from ViewModel or Activity
+    private var cameraCaptureSession: CameraCaptureSession? = null,
+    val cameraTwoPreview: CameraTwoPreview,
+) {
+    private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+    private val cameraOpenCloseLock = Semaphore(1)
+    private var cameraDevice: CameraDevice? = null
 
     private fun getCameraId(): String? {
         return cameraManager.cameraIdList.firstOrNull { id ->
@@ -26,13 +39,12 @@ class CameraManagerHelper {
         }
     }
 
-
     private fun getCameraCharacteristics(cameraId: String): CameraCharacteristics {
         return cameraManager.getCameraCharacteristics(cameraId)
     }
 
 
-    private fun openCamera(width: Int, height: Int) {
+    fun openCamera(context: Context, width: Int, height: Int) {
         scope.launch(Dispatchers.IO) {
             val cameraId = getCameraId() ?: return@launch
             try {
@@ -62,7 +74,7 @@ class CameraManagerHelper {
 
                             // Launch coroutine to call the suspending function
                             scope.launch {
-                                createCameraPreviewSession(map, width, height)
+                                cameraTwoPreview.createCameraPreviewSession(map, width, height)
                             }
                         }
 
@@ -84,8 +96,6 @@ class CameraManagerHelper {
             }
         }
     }
-
-
 
 
     fun closeCamera() {

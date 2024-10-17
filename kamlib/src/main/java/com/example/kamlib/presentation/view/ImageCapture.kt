@@ -1,16 +1,17 @@
 package com.example.kamlib.presentation.view
 
 import android.content.ContentValues
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.provider.MediaStore
 import android.util.Log
 import java.io.IOException
 
-class ImageCapture (bitmap: Bitmap){
+class ImageCapture (context: Context,bitmap: Bitmap){
 
 
-     fun saveCapturedImage(bitmap: Bitmap) {
+     fun saveCapturedImage(context: Context,bitmap: Bitmap) {
         val filename = "${System.currentTimeMillis()}.jpg"
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.TITLE, filename)
@@ -35,11 +36,6 @@ class ImageCapture (bitmap: Bitmap){
             }
         }
     }
-
-
-
-
-
 
 
 }

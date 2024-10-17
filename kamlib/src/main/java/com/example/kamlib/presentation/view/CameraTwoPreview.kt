@@ -1,49 +1,39 @@
 package com.example.kamlib.presentation.view
 
-import android.Manifest
-import android.content.ContentValues
 import android.content.Context
-import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
-import android.hardware.camera2.*
+import android.hardware.camera2.CameraAccessException
+import android.hardware.camera2.CameraCaptureSession
+import android.hardware.camera2.CameraDevice
+import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.Image
 import android.media.ImageReader
-import android.net.Uri
-import android.provider.MediaStore
-import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
-import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LifecycleObserver
 import com.example.kamlib.presentation.viewmodel.CameraViewModel
-import kotlinx.coroutines.*
-import java.io.IOException
-import java.util.concurrent.Semaphore
-import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
 class CameraTwoPreview(
-    private val context: Context,
     private val textureView: TextureView,
-    private val isFrontCamera: Boolean = false,
     private val viewModel: CameraViewModel,
+    private val cameraManagerHelper: CameraManagerHelper,
     private val scope: CoroutineScope, // Use CoroutineScope from ViewModel or Activity
 ) : LifecycleObserver {
-    private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     private var cameraDevice: CameraDevice? = null
-    private var framesCount = 0
     private var cameraCaptureSession: CameraCaptureSession? = null
     private var isCapturingFrames = false
-    private var capturedFramesCount = 0
-    private val capturedFramesList = mutableListOf<Bitmap>()
     private var frameCaptureListener: FrameCaptureListener? = null
     private var previewWidth = 512
     private var previewHeight = 512
-    private val cameraOpenCloseLock = Semaphore(1)
     private var imageReader: ImageReader =
         ImageReader.newInstance(previewWidth, previewHeight, ImageFormat.JPEG, 1)
 
@@ -80,9 +70,9 @@ class CameraTwoPreview(
         return bitmap
     }
 
-    fun startCameraPreview() {
+    fun startCameraPreview(context: Context, frameCaptureManager: FrameCaptureManager) {
         if (textureView.isAvailable) {
-            openCamera(textureView.width, textureView.height)
+            cameraManagerHelper.openCamera(context, textureView.width, textureView.height)
         } else {
             textureView.surfaceTextureListener = object : TextureView.SurfaceTextureListener {
                 override fun onSurfaceTextureAvailable(
@@ -90,7 +80,7 @@ class CameraTwoPreview(
                     width: Int,
                     height: Int,
                 ) {
-                    openCamera(width, height)
+                    cameraManagerHelper.openCamera(context, width, height)
                 }
 
                 override fun onSurfaceTextureSizeChanged(
@@ -102,73 +92,21 @@ class CameraTwoPreview(
                 }
 
                 override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-                    closeCamera()
+                    cameraManagerHelper.closeCamera()
                     return true
                 }
 
                 override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
                     if (isCapturingFrames) {
-                        captureFrame()
+                        frameCaptureManager.captureFrame()
                     }
                 }
             }
         }
     }
 
-//    private fun openCamera(width: Int, height: Int) {
-//        scope.launch(Dispatchers.IO) {
-//            val cameraId = getCameraId() ?: return@launch
-//            try {
-//                if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-//                    throw RuntimeException("Time out waiting to lock camera opening.")
-//                }
-//                val map =
-//                    getCameraCharacteristics(cameraId)
-//                        .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-//                        ?: throw RuntimeException("Cannot get available preview/video sizes")
-//
-//                withContext(Dispatchers.Main) {
-//                    if (ActivityCompat.checkSelfPermission(
-//                            context,
-//                            Manifest.permission.CAMERA
-//                        ) != PackageManager.PERMISSION_GRANTED
-//                    ) {
-//                        // TODO: Consider calling
-//                        //    ActivityCompat#requestPermissions
-//                        // here to request the missing permissions
-//                        return@withContext
-//                    }
-//                    cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
-//                        override fun onOpened(camera: CameraDevice) {
-//                            cameraOpenCloseLock.release()
-//                            cameraDevice = camera
-//
-//                            // Launch coroutine to call the suspending function
-//                            scope.launch {
-//                                createCameraPreviewSession(map, width, height)
-//                            }
-//                        }
-//
-//                        override fun onDisconnected(camera: CameraDevice) {
-//                            cameraOpenCloseLock.release()
-//                            camera.close()
-//                            cameraDevice = null
-//                        }
-//
-//                        override fun onError(camera: CameraDevice, error: Int) {
-//                            cameraOpenCloseLock.release()
-//                            camera.close()
-//                            cameraDevice = null
-//                        }
-//                    }, null)
-//                }
-//            } catch (e: CameraAccessException) {
-//                e.printStackTrace()
-//            }
-//        }
-//    }
 
-    private suspend fun createCameraPreviewSession(
+    suspend fun createCameraPreviewSession(
         map: StreamConfigurationMap,
         width: Int,
         height: Int,
@@ -218,11 +156,6 @@ class CameraTwoPreview(
     }
 
 
-
-//    private fun getCameraCharacteristics(cameraId: String): CameraCharacteristics {
-//        return cameraManager.getCameraCharacteristics(cameraId)
-//    }
-
     private fun chooseOptimalSize(
         choices: Array<Size>,
         textureViewWidth: Int,
@@ -250,68 +183,30 @@ class CameraTwoPreview(
         textureView.setTransform(matrix)
     }
 
-    fun stopCapturingFrames() {
-        isCapturingFrames = false
+
+    fun stopCameraPreview() {
+        scope.launch(Dispatchers.IO) {
+            try {
+                // Stop capturing frames
+                isCapturingFrames = false
+
+                // Close the CameraCaptureSession
+                cameraCaptureSession?.close()
+                cameraCaptureSession = null
+
+                // Close the CameraDevice
+                cameraDevice?.close()
+                cameraDevice = null
+
+                // Close the ImageReader to free up resources
+                imageReader.close()
+
+            } catch (e: CameraAccessException) {
+                e.printStackTrace()
+            }
+        }
     }
 
-//    fun closeCamera() {
-//        scope.launch(Dispatchers.IO) {
-//            try {
-//                cameraOpenCloseLock.acquire()
-//                cameraCaptureSession?.close()
-//                cameraCaptureSession = null
-//                cameraDevice?.close()
-//                cameraDevice = null
-//            } catch (e: InterruptedException) {
-//                throw RuntimeException("Interrupted while trying to lock camera closing.")
-//            } finally {
-//                cameraOpenCloseLock.release()
-//            }
-//        }
-//    }
-
-//    private fun captureFrame() {
-//        if (capturedFramesCount < framesCount) {
-//            val bitmap = textureView.bitmap
-//            if (bitmap != null) {
-//                if (viewModel.resultSuccess.value == true) {
-//                    capturedFramesList.add(bitmap.copy(Bitmap.Config.ARGB_8888, false))
-//                    capturedFramesCount++
-//                }
-//            }
-//            if (bitmap != null && capturedFramesCount == framesCount) {
-//                saveCapturedImage(capturedFramesList.last()) // Save the last captured frame
-//                capturedFramesCount = 0 // Reset for the next set of frames
-//                capturedFramesList.clear() // Clear the list
-//            }
-//        }
-//    }
-
-//    private fun saveCapturedImage(bitmap: Bitmap) {
-//        val filename = "${System.currentTimeMillis()}.jpg"
-//        val values = ContentValues().apply {
-//            put(MediaStore.Images.Media.TITLE, filename)
-//            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-//            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-//            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MyApp")
-//        }
-//
-//        val uri: Uri? =
-//            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-//
-//        uri?.let { imageUri ->
-//            try {
-//                context.contentResolver.openOutputStream(imageUri).use { outputStream ->
-//                    if (outputStream != null) {
-//                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-//                    }
-//                    Log.d("CameraTwoPreview", "Image saved to gallery: $imageUri")
-//                }
-//            } catch (e: IOException) {
-//                Log.e("CameraTwoPreview", "Error saving image: ${e.message}")
-//            }
-//        }
-//    }
 
     interface FrameCaptureListener {
         fun onFrameCaptured(bitmap: Bitmap)
