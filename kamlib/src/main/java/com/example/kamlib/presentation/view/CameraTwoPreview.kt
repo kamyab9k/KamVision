@@ -115,58 +115,58 @@ class CameraTwoPreview(
         }
     }
 
-    private fun openCamera(width: Int, height: Int) {
-        scope.launch(Dispatchers.IO) {
-            val cameraId = getCameraId() ?: return@launch
-            try {
-                if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
-                    throw RuntimeException("Time out waiting to lock camera opening.")
-                }
-                val map =
-                    getCameraCharacteristics(cameraId)
-                        .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
-                        ?: throw RuntimeException("Cannot get available preview/video sizes")
-
-                withContext(Dispatchers.Main) {
-                    if (ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.CAMERA
-                        ) != PackageManager.PERMISSION_GRANTED
-                    ) {
-                        // TODO: Consider calling
-                        //    ActivityCompat#requestPermissions
-                        // here to request the missing permissions
-                        return@withContext
-                    }
-                    cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
-                        override fun onOpened(camera: CameraDevice) {
-                            cameraOpenCloseLock.release()
-                            cameraDevice = camera
-
-                            // Launch coroutine to call the suspending function
-                            scope.launch {
-                                createCameraPreviewSession(map, width, height)
-                            }
-                        }
-
-                        override fun onDisconnected(camera: CameraDevice) {
-                            cameraOpenCloseLock.release()
-                            camera.close()
-                            cameraDevice = null
-                        }
-
-                        override fun onError(camera: CameraDevice, error: Int) {
-                            cameraOpenCloseLock.release()
-                            camera.close()
-                            cameraDevice = null
-                        }
-                    }, null)
-                }
-            } catch (e: CameraAccessException) {
-                e.printStackTrace()
-            }
-        }
-    }
+//    private fun openCamera(width: Int, height: Int) {
+//        scope.launch(Dispatchers.IO) {
+//            val cameraId = getCameraId() ?: return@launch
+//            try {
+//                if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
+//                    throw RuntimeException("Time out waiting to lock camera opening.")
+//                }
+//                val map =
+//                    getCameraCharacteristics(cameraId)
+//                        .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
+//                        ?: throw RuntimeException("Cannot get available preview/video sizes")
+//
+//                withContext(Dispatchers.Main) {
+//                    if (ActivityCompat.checkSelfPermission(
+//                            context,
+//                            Manifest.permission.CAMERA
+//                        ) != PackageManager.PERMISSION_GRANTED
+//                    ) {
+//                        // TODO: Consider calling
+//                        //    ActivityCompat#requestPermissions
+//                        // here to request the missing permissions
+//                        return@withContext
+//                    }
+//                    cameraManager.openCamera(cameraId, object : CameraDevice.StateCallback() {
+//                        override fun onOpened(camera: CameraDevice) {
+//                            cameraOpenCloseLock.release()
+//                            cameraDevice = camera
+//
+//                            // Launch coroutine to call the suspending function
+//                            scope.launch {
+//                                createCameraPreviewSession(map, width, height)
+//                            }
+//                        }
+//
+//                        override fun onDisconnected(camera: CameraDevice) {
+//                            cameraOpenCloseLock.release()
+//                            camera.close()
+//                            cameraDevice = null
+//                        }
+//
+//                        override fun onError(camera: CameraDevice, error: Int) {
+//                            cameraOpenCloseLock.release()
+//                            camera.close()
+//                            cameraDevice = null
+//                        }
+//                    }, null)
+//                }
+//            } catch (e: CameraAccessException) {
+//                e.printStackTrace()
+//            }
+//        }
+//    }
 
     private suspend fun createCameraPreviewSession(
         map: StreamConfigurationMap,
@@ -217,21 +217,11 @@ class CameraTwoPreview(
         }
     }
 
-    private fun getCameraId(): String? {
-        return cameraManager.cameraIdList.firstOrNull { id ->
-            val characteristics = cameraManager.getCameraCharacteristics(id)
-            val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
-            if (isFrontCamera) {
-                facing == CameraCharacteristics.LENS_FACING_FRONT
-            } else {
-                facing == CameraCharacteristics.LENS_FACING_BACK
-            }
-        }
-    }
 
-    private fun getCameraCharacteristics(cameraId: String): CameraCharacteristics {
-        return cameraManager.getCameraCharacteristics(cameraId)
-    }
+
+//    private fun getCameraCharacteristics(cameraId: String): CameraCharacteristics {
+//        return cameraManager.getCameraCharacteristics(cameraId)
+//    }
 
     private fun chooseOptimalSize(
         choices: Array<Size>,
@@ -264,64 +254,64 @@ class CameraTwoPreview(
         isCapturingFrames = false
     }
 
-    fun closeCamera() {
-        scope.launch(Dispatchers.IO) {
-            try {
-                cameraOpenCloseLock.acquire()
-                cameraCaptureSession?.close()
-                cameraCaptureSession = null
-                cameraDevice?.close()
-                cameraDevice = null
-            } catch (e: InterruptedException) {
-                throw RuntimeException("Interrupted while trying to lock camera closing.")
-            } finally {
-                cameraOpenCloseLock.release()
-            }
-        }
-    }
+//    fun closeCamera() {
+//        scope.launch(Dispatchers.IO) {
+//            try {
+//                cameraOpenCloseLock.acquire()
+//                cameraCaptureSession?.close()
+//                cameraCaptureSession = null
+//                cameraDevice?.close()
+//                cameraDevice = null
+//            } catch (e: InterruptedException) {
+//                throw RuntimeException("Interrupted while trying to lock camera closing.")
+//            } finally {
+//                cameraOpenCloseLock.release()
+//            }
+//        }
+//    }
 
-    private fun captureFrame() {
-        if (capturedFramesCount < framesCount) {
-            val bitmap = textureView.bitmap
-            if (bitmap != null) {
-                if (viewModel.resultSuccess.value == true) {
-                    capturedFramesList.add(bitmap.copy(Bitmap.Config.ARGB_8888, false))
-                    capturedFramesCount++
-                }
-            }
-            if (bitmap != null && capturedFramesCount == framesCount) {
-                saveCapturedImage(capturedFramesList.last()) // Save the last captured frame
-                capturedFramesCount = 0 // Reset for the next set of frames
-                capturedFramesList.clear() // Clear the list
-            }
-        }
-    }
+//    private fun captureFrame() {
+//        if (capturedFramesCount < framesCount) {
+//            val bitmap = textureView.bitmap
+//            if (bitmap != null) {
+//                if (viewModel.resultSuccess.value == true) {
+//                    capturedFramesList.add(bitmap.copy(Bitmap.Config.ARGB_8888, false))
+//                    capturedFramesCount++
+//                }
+//            }
+//            if (bitmap != null && capturedFramesCount == framesCount) {
+//                saveCapturedImage(capturedFramesList.last()) // Save the last captured frame
+//                capturedFramesCount = 0 // Reset for the next set of frames
+//                capturedFramesList.clear() // Clear the list
+//            }
+//        }
+//    }
 
-    private fun saveCapturedImage(bitmap: Bitmap) {
-        val filename = "${System.currentTimeMillis()}.jpg"
-        val values = ContentValues().apply {
-            put(MediaStore.Images.Media.TITLE, filename)
-            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MyApp")
-        }
-
-        val uri: Uri? =
-            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-
-        uri?.let { imageUri ->
-            try {
-                context.contentResolver.openOutputStream(imageUri).use { outputStream ->
-                    if (outputStream != null) {
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-                    }
-                    Log.d("CameraTwoPreview", "Image saved to gallery: $imageUri")
-                }
-            } catch (e: IOException) {
-                Log.e("CameraTwoPreview", "Error saving image: ${e.message}")
-            }
-        }
-    }
+//    private fun saveCapturedImage(bitmap: Bitmap) {
+//        val filename = "${System.currentTimeMillis()}.jpg"
+//        val values = ContentValues().apply {
+//            put(MediaStore.Images.Media.TITLE, filename)
+//            put(MediaStore.Images.Media.DISPLAY_NAME, filename)
+//            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+//            put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/MyApp")
+//        }
+//
+//        val uri: Uri? =
+//            context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+//
+//        uri?.let { imageUri ->
+//            try {
+//                context.contentResolver.openOutputStream(imageUri).use { outputStream ->
+//                    if (outputStream != null) {
+//                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+//                    }
+//                    Log.d("CameraTwoPreview", "Image saved to gallery: $imageUri")
+//                }
+//            } catch (e: IOException) {
+//                Log.e("CameraTwoPreview", "Error saving image: ${e.message}")
+//            }
+//        }
+//    }
 
     interface FrameCaptureListener {
         fun onFrameCaptured(bitmap: Bitmap)
