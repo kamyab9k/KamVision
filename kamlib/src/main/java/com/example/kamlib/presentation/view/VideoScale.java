@@ -3,7 +3,7 @@ package com.example.kamlib.presentation.view;
 
 import android.graphics.Matrix;
 
-public class VideoScaler {
+public class VideoScale {
     public static final int FILL = 0;
     public static final int FIT_CENTER = 1;
     public static final int CROP_CENTER = 2;

@@ -8,10 +8,9 @@ import android.provider.MediaStore
 import android.util.Log
 import java.io.IOException
 
-class ImageCapture (context: Context,bitmap: Bitmap){
+class ImageCapture(context: Context, bitmap: Bitmap) {
 
-
-     fun saveCapturedImage(context: Context,bitmap: Bitmap) {
+    fun saveCapturedImage(context: Context, bitmap: Bitmap) {
         val filename = "${System.currentTimeMillis()}.jpg"
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.TITLE, filename)

@@ -7,31 +7,34 @@ import androidx.lifecycle.LifecycleObserver
 import kotlinx.coroutines.CoroutineScope
 
 
-class CameraFacade private constructor(
+class CameraService private constructor(
     private val context: Context,
     private val textureView: TextureView,
-    private val scope: CoroutineScope,
-    private val resolution: Resolution?,
-    private val frameRate: Int?,
+    scope: CoroutineScope,
 ) : LifecycleObserver {
-    private val frameCaptureManager = FrameCaptureManager(textureView)
-    private val cameraPreview: CameraTwoPreview =
-        CameraTwoPreview(textureView, scope, resolution, frameRate)
 
-    // Start camera preview
+    //    private val frameCaptureManager = FrameCaptureManager(textureView)
+//    private val cameraManagerHelper = CameraManagerHelper(context, scope)
+    private val cameraPreview: CameraPreview =
+        CameraPreview(context, textureView)
+    private val frameCaptureManager: FrameCaptureManager =
+        FrameCaptureManager(textureView, 512, 512)
+
+
+    // Start camera preview API
     fun startPreview() {
-        cameraPreview.startCameraPreview(context, frameCaptureManager)
+        cameraPreview.startCameraPreview()
     }
 
     // Capture frame manually
-    fun captureFrame() {
-        frameCaptureManager.captureFrame()
+    fun captureFrame(frames:Int) {
+        frameCaptureManager.startCapturingFrames(frames)
     }
 
-    // Stop camera preview
-    fun stopPreview() {
-        cameraPreview.stopCameraPreview()
-    }
+//    // Stop camera preview
+//    fun stopPreview() {
+//        cameraPreview.stopCameraPreview()
+//    }
 
 
     // Frame capture listener interface
@@ -61,13 +64,11 @@ class CameraFacade private constructor(
             this.frameCaptureListener = listener
         }
 
-        fun build(): CameraFacade {
-            return CameraFacade(
+        fun build(): CameraService {
+            return CameraService(
                 context = context,
                 textureView = textureView,
-                scope = scope,
-                resolution = resolution,
-                frameRate = frameRate,
+                scope = scope
             )
         }
     }
