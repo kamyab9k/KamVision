@@ -1,24 +1,32 @@
 package com.example.kamlib.presentation.view
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.media.Image
 import android.media.ImageReader
 import android.view.TextureView
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import com.example.kamlib.presentation.viewmodel.CameraViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class FrameCaptureManager(
     private val textureView: TextureView,
     private val previewWidth: Int,
     private val previewHeight: Int,
+    context: Context,
 ) {
-    private var framesCount = 0
     private var capturedFramesCount = 0
-    var isCapturingFrames = false
     private val capturedFramesList = mutableListOf<Bitmap>()
     private var frameCaptureListener: FrameCaptureListener? = null
-
     private val imageReader: ImageReader =
         ImageReader.newInstance(previewWidth, previewHeight, ImageFormat.JPEG, 1)
+    private val viewModel: CameraViewModel =
+        ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
 
     init {
         imageReader.setOnImageAvailableListener({ reader ->
@@ -49,32 +57,38 @@ class FrameCaptureManager(
     }
 
     fun startCapturingFrames(count: Int) {
-        framesCount = count
-        isCapturingFrames = true
+        viewModel.setFrameCount(count)
+        viewModel.startCapturing() // Call ViewModel to set state
         capturedFramesCount = 0
         capturedFramesList.clear()
     }
 
     fun captureFrame() {
-        if (capturedFramesCount < framesCount) {
+        if (capturedFramesCount < viewModel.frameCount.value) {
             val bitmap = textureView.bitmap
             if (bitmap != null) {
-                if (1 == 1) {
-                    capturedFramesList.add(bitmap.copy(Bitmap.Config.ARGB_8888, false))
-                    capturedFramesCount++
-                }
+                capturedFramesList.add(bitmap.copy(Bitmap.Config.ARGB_8888, false))
+                capturedFramesCount++
             }
             if (bitmap != null) {
                 frameCaptureListener?.onFrameCaptured(bitmap)
             }
-            if (framesCount != 0 && capturedFramesCount == framesCount) {
+            if (viewModel.frameCount.value != 0 && capturedFramesCount == viewModel.frameCount.value) {
                 frameCaptureListener?.onFramesCaptured(capturedFramesList)
-                isCapturingFrames = false
+                viewModel.stopCapturing()
+               viewModel.addCapturedFrames(capturedFramesList)
             }
         }
         println("captured frames are $capturedFramesList")
     }
 
+    fun getCapturedFrames(onFramesCaptured: (frames: List<Bitmap>) -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            // Wait for frames to be filled
+            val frames = viewModel.getCapturedFrames()
+            onFramesCaptured(frames)
+        }
+    }
 
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)
@@ -83,9 +97,5 @@ class FrameCaptureManager(
 
     fun setFrameCaptureListener(listener: FrameCaptureListener) {
         frameCaptureListener = listener
-    }
-
-    fun stopCapturingFrames() {
-//        isCapturingFrames = false
     }
 }

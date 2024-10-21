@@ -15,11 +15,19 @@ import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.Image
 import android.os.Handler
 import android.os.HandlerThread
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import androidx.lifecycle.LifecycleObserver
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import com.example.kamlib.presentation.viewmodel.CameraViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
@@ -35,15 +43,18 @@ class CameraPreview(
     private var cameraCaptureSession: CameraCaptureSession? = null
     private var backgroundHandler: Handler? = null
     private var backgroundThread: HandlerThread? = null
-    private val capturedFramesList = mutableListOf<Bitmap>()
     private var frameCaptureListener: FrameCaptureListener? = null
     private var previewWidth = 512
     private var previewHeight = 512
     private val cameraOpenCloseLock = Semaphore(1)
-    private var isCapturingFramesID = false
-    private var isCapturingFramesMRZ = false
-    private val frameCaptureManager = FrameCaptureManager(textureView, previewWidth, previewHeight)
+    val frameCaptureManager = FrameCaptureManager(textureView, previewWidth, previewHeight, context)
     private val cameraManagerHelper = CameraManagerHelper(context)
+    private val viewModel: CameraViewModel =
+        ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
+    private var isPreviewStopped = false // Flag to track if preview is stopped
+
+
 
 
     private fun Image.toBitmap(): Bitmap {
@@ -62,6 +73,10 @@ class CameraPreview(
     }
 
     fun startCameraPreview() {
+        if (isPreviewStopped) {
+            Log.d("CameraPreview", "Preview is stopped. Not starting again.")
+            return // Don't start the preview if it was stopped
+        }
         if (textureView.isAvailable) {
             openCamera(textureView.width, textureView.height)
         } else {
@@ -71,7 +86,9 @@ class CameraPreview(
                     width: Int,
                     height: Int,
                 ) {
-                    openCamera(width, height)
+                    if (!isPreviewStopped) { // Ensure preview is not stopped
+                        openCamera(width, height)
+                    }
                 }
 
                 override fun onSurfaceTextureSizeChanged(
@@ -83,15 +100,19 @@ class CameraPreview(
                 }
 
                 override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-                    closeCamera()
+                    stopCameraPreview()
                     stopBackgroundThread()
                     return true
                 }
 
                 override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-//                    if (frameCaptureManager.isCapturingFrames) {
-                        frameCaptureManager.captureFrame()
-//                    }
+                    coroutineScope.launch {
+                        viewModel.isCapturingState.collectLatest { isCapturing ->
+                            if (isCapturing) {
+                                frameCaptureManager.captureFrame()
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -251,40 +272,6 @@ class CameraPreview(
         }
     }
 
-    fun captureSingleFrameMRZ() {
-        val bitmap = textureView.bitmap
-        if (1 == 1) {
-            if (bitmap != null) {
-                frameCaptureListener?.onFrameCaptured(bitmap.copy(Bitmap.Config.ARGB_8888, false))
-                isCapturingFramesMRZ = false
-
-            }
-        }
-    }
-
-
-//    fun startCapturingFrames(count: Int) {
-//        framesCount = count
-//        isCapturingFrames = true
-//        capturedFramesCount = 0
-//        capturedFramesList.clear()
-//    }
-//
-//    fun startCapturingFramesIDMatch() {
-//        isCapturingFramesID = true
-//        capturedFramesCount = 0
-//        capturedFramesList.clear()
-//    }
-
-    fun stopCapturingFrames() {
-//        isCapturingFrames = false
-    }
-
-
-    private fun getCapturedFrames(): List<Bitmap> {
-        return capturedFramesList
-    }
-
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)
         fun onFramesCaptured(frames: List<Bitmap>)
@@ -294,8 +281,9 @@ class CameraPreview(
         frameCaptureListener = listener
     }
 
-    fun closeCamera() {
+    fun stopCameraPreview() {
         try {
+            isPreviewStopped = true // Set the flag to true when preview is stopped
             cameraOpenCloseLock.acquire()
             cameraCaptureSession?.close()
             cameraCaptureSession = null

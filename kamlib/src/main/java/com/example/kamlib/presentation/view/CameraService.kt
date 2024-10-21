@@ -12,30 +12,26 @@ class CameraService private constructor(
     private val textureView: TextureView,
     scope: CoroutineScope,
 ) : LifecycleObserver {
-
-    //    private val frameCaptureManager = FrameCaptureManager(textureView)
-//    private val cameraManagerHelper = CameraManagerHelper(context, scope)
     private val cameraPreview: CameraPreview =
         CameraPreview(context, textureView)
     private val frameCaptureManager: FrameCaptureManager =
-        FrameCaptureManager(textureView, 512, 512)
+        FrameCaptureManager(textureView, 512, 512, context)
 
-
-    // Start camera preview API
     fun startPreview() {
         cameraPreview.startCameraPreview()
     }
 
-    // Capture frame manually
-    fun captureFrame(frames:Int) {
+    fun stopCameraPreview() {
+        cameraPreview.stopCameraPreview()
+    }
+
+    fun captureFrame(frames: Int) {
         frameCaptureManager.startCapturingFrames(frames)
     }
 
-//    // Stop camera preview
-//    fun stopPreview() {
-//        cameraPreview.stopCameraPreview()
-//    }
-
+    fun getCapturedFrames(onFramesCaptured: (frames: List<Bitmap>) -> Unit) {
+        frameCaptureManager.getCapturedFrames(onFramesCaptured)
+    }
 
     // Frame capture listener interface
     interface FrameCaptureListener {

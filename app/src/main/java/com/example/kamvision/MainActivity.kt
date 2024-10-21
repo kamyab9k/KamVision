@@ -2,7 +2,9 @@ package com.example.kamvision
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.util.Log
 import android.view.TextureView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,13 +21,10 @@ import kotlinx.coroutines.MainScope
 class MainActivity : ComponentActivity() {
     private val coroutineScope = MainScope()
 
-    // Register the permission launcher
     private val requestCameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             if (isGranted) {
-                // Permission granted, proceed with camera setup
             } else {
-                // Permission denied, handle accordingly (e.g., show a message)
             }
         }
 
@@ -33,16 +32,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val cameraPermissionGranted = remember { mutableStateOf(false) }
-
             LaunchedEffect(Unit) {
                 cameraPermissionGranted.value = isCameraPermissionGranted()
                 if (!cameraPermissionGranted.value) {
                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
             }
-
             if (cameraPermissionGranted.value) {
-                // Call the CameraPreview composable
                 CameraPreview()
             }
         }
@@ -61,7 +57,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CameraPreview() {
     val coroutineScope = remember { MainScope() }
-    var cameraFacade: CameraService? by remember { mutableStateOf(null) }
+    var cameraService: CameraService? by remember { mutableStateOf(null) }
     var textureView: TextureView? by remember { mutableStateOf(null) }
 
     // Use Box to ensure that the preview fills the entire screen
@@ -73,19 +69,23 @@ fun CameraPreview() {
                     textureView = it
                 }
             },
-            modifier = Modifier.fillMaxSize(), // Ensures the TextureView fills the available space
+            modifier = Modifier.fillMaxSize(),
             update = { textureView ->
-                if (cameraFacade == null) {
-                    // Initialize the CameraFacade with the created TextureView
-                    cameraFacade = CameraService.Builder(
+                if (cameraService == null) {
+                    // Initialize the CameraService with the created TextureView
+                    cameraService = CameraService.Builder(
                         context = textureView.context,
                         textureView = textureView,
                         scope = coroutineScope
                     ).build()
 
-                    // Start the camera preview
-                    cameraFacade?.startPreview()
-                    cameraFacade?.captureFrame(20)
+                    cameraService?.startPreview()
+                    cameraService?.captureFrame(20)
+
+                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
+                        // Handle captured frames here
+                        println("Captured frames2: $frames")
+                    }
                 }
             }
         )
@@ -94,7 +94,7 @@ fun CameraPreview() {
     // Stop the camera preview when the composable is disposed
     DisposableEffect(Unit) {
         onDispose {
-//            cameraFacade?.stopPreview()
+            cameraService?.stopCameraPreview()
         }
     }
 }
