@@ -33,6 +33,10 @@ class CameraService private constructor(
         frameCaptureManager.getCapturedFrames(onFramesCaptured)
     }
 
+    fun captureImage() {
+        cameraPreview.captureImage()
+    }
+
     // Frame capture listener interface
     interface FrameCaptureListener {
         fun onFrameCaptured(bitmap: Bitmap)

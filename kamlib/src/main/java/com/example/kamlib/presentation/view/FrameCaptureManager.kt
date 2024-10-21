@@ -11,7 +11,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.example.kamlib.presentation.viewmodel.CameraViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class FrameCaptureManager(
@@ -76,7 +75,7 @@ class FrameCaptureManager(
             if (viewModel.frameCount.value != 0 && capturedFramesCount == viewModel.frameCount.value) {
                 frameCaptureListener?.onFramesCaptured(capturedFramesList)
                 viewModel.stopCapturing()
-               viewModel.addCapturedFrames(capturedFramesList)
+                viewModel.addCapturedFrames(capturedFramesList)
             }
         }
         println("captured frames are $capturedFramesList")
@@ -84,7 +83,6 @@ class FrameCaptureManager(
 
     fun getCapturedFrames(onFramesCaptured: (frames: List<Bitmap>) -> Unit) {
         CoroutineScope(Dispatchers.Main).launch {
-            // Wait for frames to be filled
             val frames = viewModel.getCapturedFrames()
             onFramesCaptured(frames)
         }

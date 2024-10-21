@@ -56,7 +56,8 @@ class MainActivity : ComponentActivity() {
 // Composable to show the Camera Preview
 @Composable
 fun CameraPreview() {
-    val coroutineScope = remember { MainScope() }
+    val coroutineScope =
+        rememberCoroutineScope() // Use rememberCoroutineScope for better lifecycle handling
     var cameraService: CameraService? by remember { mutableStateOf(null) }
     var textureView: TextureView? by remember { mutableStateOf(null) }
 
@@ -72,7 +73,6 @@ fun CameraPreview() {
             modifier = Modifier.fillMaxSize(),
             update = { textureView ->
                 if (cameraService == null) {
-                    // Initialize the CameraService with the created TextureView
                     cameraService = CameraService.Builder(
                         context = textureView.context,
                         textureView = textureView,
@@ -80,12 +80,14 @@ fun CameraPreview() {
                     ).build()
 
                     cameraService?.startPreview()
-                    cameraService?.captureFrame(20)
+//                    cameraService?.captureFrame(20)
 
-                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
+//                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
                         // Handle captured frames here
-                        println("Captured frames2: $frames")
-                    }
+//                        println("Captured frames2: $frames")
+                        cameraService!!.captureImage()
+
+//                    }
                 }
             }
         )

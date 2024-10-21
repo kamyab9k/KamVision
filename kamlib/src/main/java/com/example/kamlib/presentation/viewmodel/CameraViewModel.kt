@@ -37,6 +37,10 @@ class CameraViewModel : ViewModel() {
             addAll(frames) // Add the list of frames to the current list
         }
     }
+    fun onImageCaptured(bitmap: Bitmap) {
+        // Handle the captured image bitmap here (e.g., save it, display it, etc.)
+        // You can store it, process it, or update the UI accordingly.
+    }
 
     // Retrieve the captured frames list
     fun getCapturedFrames(): MutableList<Bitmap> {

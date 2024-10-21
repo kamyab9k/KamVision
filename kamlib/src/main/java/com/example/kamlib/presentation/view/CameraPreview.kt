@@ -2,6 +2,7 @@ package com.example.kamlib.presentation.view
 
 import CameraManagerHelper
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -26,6 +27,7 @@ import com.example.kamlib.presentation.viewmodel.CameraViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
@@ -53,8 +55,7 @@ class CameraPreview(
         ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private var isPreviewStopped = false // Flag to track if preview is stopped
-
-
+    private lateinit var imageCapture: ImageCapture // Declare ImageCapture instance
 
 
     private fun Image.toBitmap(): Bitmap {
@@ -111,6 +112,7 @@ class CameraPreview(
                             if (isCapturing) {
                                 frameCaptureManager.captureFrame()
                             }
+
                         }
                     }
                 }
@@ -119,7 +121,7 @@ class CameraPreview(
     }
 
     @SuppressLint("MissingPermission")
-    private fun openCamera(width: Int, height: Int) {
+    fun openCamera(width: Int, height: Int) {
         val cameraId = getCameraId() ?: return
         try {
             if (!cameraOpenCloseLock.tryAcquire(2500, TimeUnit.MILLISECONDS)) {
@@ -133,6 +135,9 @@ class CameraPreview(
                     cameraOpenCloseLock.release()
                     cameraDevice = camera
                     createCameraPreviewSession(map, width, height)
+                    //TODO: in order to capture image (after) preview is available,change below line's place
+                    imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
+
                 }
 
                 override fun onDisconnected(camera: CameraDevice) {
@@ -184,6 +189,7 @@ class CameraPreview(
                             )
                             captureRequestBuilder?.build()
                                 ?.let { session.setRepeatingRequest(it, null, backgroundHandler) }
+
                         } catch (e: CameraAccessException) {
                             e.printStackTrace()
                         }
@@ -271,6 +277,10 @@ class CameraPreview(
             e.printStackTrace()
         }
     }
+    fun captureImage() {
+            imageCapture.captureImage()
+        }
+
 
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)
