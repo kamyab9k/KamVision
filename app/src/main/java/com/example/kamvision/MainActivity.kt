@@ -80,15 +80,15 @@ fun CameraPreview() {
                     ).build()
 
                     cameraService?.startPreview()
-//                    cameraService?.captureFrame(20)
+                    cameraService?.captureFrame(20)
 
-//                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
-                        // Handle captured frames here
-//                        println("Captured frames2: $frames")
-                        cameraService!!.captureImage()
-
+                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
+//                         Handle captured frames here
+                        println("captured frames2: $frames")
+//                        cameraService!!.captureImage()
+//
 //                    }
-                }
+                }}
             }
         )
     }

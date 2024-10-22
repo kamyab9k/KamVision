@@ -19,11 +19,8 @@ class ImageCapture(
     private val textureView: TextureView,
     private val viewModel: CameraViewModel,
 ) {
-
-
     private val context: Context
         get() = textureView.context // Retrieves context from TextureView
-
     private var imageReader: ImageReader? = null
 
     // Define the ORIENTATIONS mapping
@@ -38,7 +35,7 @@ class ImageCapture(
         startImageCapture() // Automatically start image capture on initialization
     }
 
-    fun startImageCapture() {
+    private fun startImageCapture() {
         // Initialize ImageReader for capturing images
         val width = textureView.width
         val height = textureView.height
@@ -69,6 +66,7 @@ class ImageCapture(
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
                         session.capture(captureRequestBuilder.build(), null, null)
+//                        cameraPreview.startCameraPreview()
                     }
 
                     override fun onConfigureFailed(session: CameraCaptureSession) {
@@ -81,6 +79,21 @@ class ImageCapture(
             e.printStackTrace()
         }
     }
+
+//    private fun Image.toBitmap(): Bitmap {
+//        val planes = this.planes
+//        val buffer = planes[0].buffer
+//        val pixelStride = planes[0].pixelStride
+//        val rowStride = planes[0].rowStride
+//        val rowPadding = rowStride - pixelStride * previewWidth
+//        val bitmap = Bitmap.createBitmap(
+//            previewWidth + rowPadding / pixelStride,
+//            previewHeight,
+//            Bitmap.Config.ARGB_8888
+//        )
+//        bitmap.copyPixelsFromBuffer(buffer)
+//        return bitmap
+//    }
 
     private fun convertImageToBitmap(image: Image): Bitmap {
         // Your implementation for converting Image to Bitmap

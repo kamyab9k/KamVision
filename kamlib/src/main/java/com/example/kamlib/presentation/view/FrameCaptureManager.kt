@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelStoreOwner
 import com.example.kamlib.presentation.viewmodel.CameraViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class FrameCaptureManager(
@@ -26,34 +27,34 @@ class FrameCaptureManager(
         ImageReader.newInstance(previewWidth, previewHeight, ImageFormat.JPEG, 1)
     private val viewModel: CameraViewModel =
         ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
-
-    init {
-        imageReader.setOnImageAvailableListener({ reader ->
-            val image = reader.acquireLatestImage()
-            image?.let { processImage(it) }
-            image?.close()
-        }, null)
-    }
-
-    private fun processImage(image: Image) {
-        val bitmap = image.toBitmap()
-        frameCaptureListener?.onFrameCaptured(bitmap)
-    }
-
-    private fun Image.toBitmap(): Bitmap {
-        val planes = this.planes
-        val buffer = planes[0].buffer
-        val pixelStride = planes[0].pixelStride
-        val rowStride = planes[0].rowStride
-        val rowPadding = rowStride - pixelStride * previewWidth
-        val bitmap = Bitmap.createBitmap(
-            previewWidth + rowPadding / pixelStride,
-            previewHeight,
-            Bitmap.Config.ARGB_8888
-        )
-        bitmap.copyPixelsFromBuffer(buffer)
-        return bitmap
-    }
+//
+//    init {
+//        imageReader.setOnImageAvailableListener({ reader ->
+//            val image = reader.acquireLatestImage()
+//            image?.let { processImage(it) }
+//            image?.close()
+//        }, null)
+//    }
+//
+//    private fun processImage(image: Image) {
+//        val bitmap = image.toBitmap()
+//        frameCaptureListener?.onFrameCaptured(bitmap)
+//    }
+//
+//    private fun Image.toBitmap(): Bitmap {
+//        val planes = this.planes
+//        val buffer = planes[0].buffer
+//        val pixelStride = planes[0].pixelStride
+//        val rowStride = planes[0].rowStride
+//        val rowPadding = rowStride - pixelStride * previewWidth
+//        val bitmap = Bitmap.createBitmap(
+//            previewWidth + rowPadding / pixelStride,
+//            previewHeight,
+//            Bitmap.Config.ARGB_8888
+//        )
+//        bitmap.copyPixelsFromBuffer(buffer)
+//        return bitmap
+//    }
 
     fun startCapturingFrames(count: Int) {
         viewModel.setFrameCount(count)
@@ -83,6 +84,11 @@ class FrameCaptureManager(
 
     fun getCapturedFrames(onFramesCaptured: (frames: List<Bitmap>) -> Unit) {
         CoroutineScope(Dispatchers.Main).launch {
+            val frameCount = viewModel.frameCount.value
+
+            // Calculate the delay based on the frame count
+            val delayInMillis = (frameCount / 24.0 * 2500).toLong()
+            delay(delayInMillis)
             val frames = viewModel.getCapturedFrames()
             onFramesCaptured(frames)
         }

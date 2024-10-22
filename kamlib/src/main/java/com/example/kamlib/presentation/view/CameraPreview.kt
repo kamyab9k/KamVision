@@ -1,8 +1,6 @@
 package com.example.kamlib.presentation.view
 
-import CameraManagerHelper
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.SurfaceTexture
@@ -13,7 +11,6 @@ import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
 import android.hardware.camera2.params.StreamConfigurationMap
-import android.media.Image
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -27,7 +24,7 @@ import com.example.kamlib.presentation.viewmodel.CameraViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.util.concurrent.Semaphore
@@ -50,28 +47,11 @@ class CameraPreview(
     private var previewHeight = 512
     private val cameraOpenCloseLock = Semaphore(1)
     val frameCaptureManager = FrameCaptureManager(textureView, previewWidth, previewHeight, context)
-    private val cameraManagerHelper = CameraManagerHelper(context)
     private val viewModel: CameraViewModel =
         ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private var isPreviewStopped = false // Flag to track if preview is stopped
     private lateinit var imageCapture: ImageCapture // Declare ImageCapture instance
-
-
-    private fun Image.toBitmap(): Bitmap {
-        val planes = this.planes
-        val buffer = planes[0].buffer
-        val pixelStride = planes[0].pixelStride
-        val rowStride = planes[0].rowStride
-        val rowPadding = rowStride - pixelStride * previewWidth
-        val bitmap = Bitmap.createBitmap(
-            previewWidth + rowPadding / pixelStride,
-            previewHeight,
-            Bitmap.Config.ARGB_8888
-        )
-        bitmap.copyPixelsFromBuffer(buffer)
-        return bitmap
-    }
 
     fun startCameraPreview() {
         if (isPreviewStopped) {
@@ -112,7 +92,6 @@ class CameraPreview(
                             if (isCapturing) {
                                 frameCaptureManager.captureFrame()
                             }
-
                         }
                     }
                 }
@@ -136,8 +115,7 @@ class CameraPreview(
                     cameraDevice = camera
                     createCameraPreviewSession(map, width, height)
                     //TODO: in order to capture image (after) preview is available,change below line's place
-                    imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
-
+//                    imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
                 }
 
                 override fun onDisconnected(camera: CameraDevice) {
@@ -189,6 +167,9 @@ class CameraPreview(
                             )
                             captureRequestBuilder?.build()
                                 ?.let { session.setRepeatingRequest(it, null, backgroundHandler) }
+
+                            // Now that preview is ready, initialize ImageCapture and capture image
+                            imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
 
                         } catch (e: CameraAccessException) {
                             e.printStackTrace()
@@ -277,10 +258,13 @@ class CameraPreview(
             e.printStackTrace()
         }
     }
+
     fun captureImage() {
+        coroutineScope.launch {
+            delay(1000)
             imageCapture.captureImage()
         }
-
+    }
 
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)

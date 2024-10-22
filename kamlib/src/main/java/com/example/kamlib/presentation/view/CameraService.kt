@@ -64,6 +64,13 @@ class CameraService private constructor(
             this.frameCaptureListener = listener
         }
 
+        //        fun enableAutoBrightness(enable: Boolean) = apply {
+//            // Logic for enabling auto-brightness
+//        }
+//
+//        fun enableFaceDetection(enable: Boolean) = apply {
+//            // Logic for enabling face detection
+//        }
         fun build(): CameraService {
             return CameraService(
                 context = context,
