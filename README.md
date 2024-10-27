@@ -2,9 +2,9 @@
 [![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) [![Read my article](https://img.shields.io/badge/Read%20my%20article-brightgreen.svg)](https://medium.com/@kamyab9k)
 ![mavenCentral](https://img.shields.io/maven-central/v/com.aminography/primedatepicker?color=blue)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c1c44ee8a3a14b0e8c963c36c8e586d8)](https://app.codacy.com/manual/aminography/PrimeDatePicker?utm_source=github.com&utm_medium=referral&utm_content=aminography/PrimeDatePicker&utm_campaign=Badge_Grade_Dashboard)
-[![API](https://img.shields.io/badge/minSdkVersion-13-important.svg)](https://android-arsenal.com/api?level=13)
+[![API](https://img.shields.io/badge/minSdkVersion-24-important.svg)](https://android-arsenal.com/api?level=24)
 
-Firstly, **`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frames capturing` as a one line call in your projects.
+Firstly, **`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line call in your projects.
                        ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)
 
 <table>
@@ -34,8 +34,8 @@ Table of Contents
 - [Main Characteristics](#main-characteristics)
 - [Download](#download)
 - [Usage](#usage)
-   - [Builder Configurations](#builder-configurations)
-   - [Input Calendar Configurations](#input-calendar-configurations)
+   - [Library functions](#Library-functions)
+   - [Input KamVision Configurations](#input-KamVision-configurations)
 - [Change Log](#change-log)
 <br/>
 
@@ -65,8 +65,8 @@ Download
 
 ```gradle
 dependencies {
-    implementation 'com.
-    implementation 'com.
+    implementation (Libs.)
+    implementation (Libs.)
 }
 ```
 
@@ -75,61 +75,80 @@ dependencies {
 Usage
 -----
 
-To enjoy `KamVision`, create an instance using a builder pattern in simple 4 steps.
+To enjoy `KamVision` in jetpack compose, create an instance using a builder pattern in simple 4 steps.
 
-1. Decide on **BottomSheet** or **Dialog** representation along with an initial calendar:
+1. First create an  **AndroidView** and **TextureView** in a Box(Composable) to later pass it to the Library function parameters:
 ```kotlin
-// To show a date picker with Civil dates, also today as the starting date
-val today = CivilCalendar()
+// To create textureView to pass later on
+var textureView: TextureView? by remember { mutableStateOf(null) }
 
-val datePicker = PrimeDatePicker.bottomSheetWith(today)  // or dialogWith(today)
-```
+@Composable
+fun CameraPreview() {
+    val coroutineScope =
+        rememberCoroutineScope()
+    var textureView: TextureView? by remember { mutableStateOf(null) }
 
-2. Decide on picking strategy along with passing a proper callback:
-```kotlin
-val callback = SingleDayPickCallback { day ->
-    // TODO
+    // Use Box to ensure that the preview fills the entire screen
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { ctx ->
+                // Create the TextureView
+                TextureView(ctx).also {
+                    textureView = it
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { textureView ->
+                   }
+            }
+        )
+    }
 }
-
-val today = CivilCalendar()
-
-val datePicker = PrimeDatePicker.bottomSheetWith(today)
-        .pickSingleDay(callback)  // or pickRangeDays(callback) or pickMultipleDays(callback)
 ```
 
-3. Apply some optional configurations:
+2. Create instance of the Library:
+```kotlin
+    var cameraService: CameraService? by remember { mutableStateOf(null) }
+
+    var textureView: TextureView? by remember { mutableStateOf(null) }
+...
+```
+
+3. Build the Lib in the update block :
 
 ```kotlin
 ...
 
-val datePicker = PrimeDatePicker.bottomSheetWith(today)
-        .pickSingleDay(callback)
-        .initiallyPickedSingleDay(pickedDay)
-        ...
+ update = { textureView ->
+                if (cameraService == null) {
+                    cameraService = CameraService.Builder(
+                        context = textureView.context,
+                        textureView = textureView,
+                        scope = coroutineScope
+                    ).build()
+...
 ```
 
-4. Build the date picker and show it:
+4. finally call the Library functions:
 ```kotlin
-val callback = SingleDayPickCallback { day ->
-    // TODO
+...
+                    cameraService?.startPreview()
+
+                    cameraService?.captureFrame(20)
+
+                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
+//                  Handle captured frames here
+
 }
-
-val today = CivilCalendar()
-
-val datePicker = PrimeDatePicker.bottomSheetWith(today)
-        .pickSingleDay(callback)
-        .initiallyPickedSingleDay(pickedDay)
-        .build()
-        
-datePicker.show(supportFragmentManager, "SOME_TAG")
+...
 ```
 
 <br/>
 
 
-### Builder Configurations
+### Library functions
 
-There are several builder functions applying relevant configurations on the date picker.
+There are several functions you can call with KamVision.
 
 <br/>
 
@@ -137,113 +156,80 @@ There are several builder functions applying relevant configurations on the date
 
   <tr>
     <td><b>Function</b></td>
-    <td><b>Picking Strategy</b></td>
+    <td><b>Example Usage</b></td>
   </tr>
 
   <tr>
-    <td><b>• minPossibleDate(minDate: PrimeCalendar)</b></td>
-    <td>ALL</td>
+    <td><b>• startPreview()</b></td>
+    <td>cameraService?.startPreview()
+</td>
   </tr>
   <tr>
-    <td colspan="2"><i>Specifies the minimum feasible date to be shown in date picker, which is selectable.</i></td>
+    <td colspan="2"><i>Starts the camera preview.</i></td>
   </tr>
 
   <tr>
-    <td><b>• maxPossibleDate(maxDate: PrimeCalendar)</b></td>
-    <td>ALL</td>
+    <td><b>• stopPreview()</b></td>
+    <td>cameraService?.stopPreview()</td>
   </tr>
   <tr>
-    <td colspan="2"><i>Specifies the maximum feasible date to be shown in date picker, which is selectable.</i></td>
+    <td colspan="2"><i>Stops the camera preview.</i></td>
   </tr>
 
   <tr>
-    <td><b>• firstDayOfWeek(firstDayOfWeek: Int)</b></td>
-    <td>ALL</td>
+    <td><b>• captureFrame(Frames: Int)</b></td>
+    <td>cameraService?.captureFrame(15)</td>
   </tr>
   <tr>
-    <td colspan="2"><i>Specifies the day that should be considered as the start of the week. Possible values are: Calendar.SUNDAY, Calendar.MONDAY, etc.</i></td>
+    <td colspan="2"><i>Capture frames and the number is given in parameter .</i></td>
   </tr>
 
   <tr>
-    <td><b>• disabledDays(disabledDays: List&lt;PrimeCalendar&gt;)</b></td>
-    <td>ALL</td>
+    <td><b>• getCapturedFrames(frames: List<Bitmap>)</b></td>
+    <td>cameraService?.getCapturedFrames { frames: List<Bitmap> ->}</td>
   </tr>
   <tr>
-    <td colspan="2"><i>Specifies the list of disabled days, which aren't selectable.</i></td>
+    <td colspan="2"><i>Returns the list of captured frames in Bitmap format.</i></td>
   </tr>
 
-  <tr>
-    <td><b>• applyTheme(themeFactory: ThemeFactory)</b></td>
-    <td>ALL</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Specifies the theme.</i></td>
-  </tr>
 
-  <tr>
-    <td><b>• initiallyPickedSingleDay(pickedDay: PrimeCalendar)</b></td>
-    <td>SingleDay</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Specifies initially picked day when the date picker has just shown.</i></td>
-  </tr>
 
-  <tr>
-    <td><b>• initiallyPickedRangeDays(startDay: PrimeCalendar, endDay: PrimeCalendar)</b></td>
-    <td>RangeDays</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Specifies initially picked range of days when the date picker has just shown.</i></td>
-  </tr>
-
-  <tr>
-    <td><b>• autoSelectPickEndDay(autoSelect: Boolean)</b></td>
-    <td>RangeDays</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Specifies automatic selection of picking end day when the start day gets picked.</i></td>
-  </tr>
-
-  <tr>
-    <td><b>• initiallyPickedMultipleDays(pickedDays: List&lt;PrimeCalendar&gt;)</b></td>
-    <td>MultipleDays</td>
-  </tr>
-  <tr>
-    <td colspan="2"><i>Specifies initially picked multiple days when the date picker has just shown.</i></td>
-  </tr>
 
 </table>
 
 <br/>
 
-### Input Calendar Configurations
+### Input KamVision Configurations
 
-In addition to the builder functions, `KamVision` receives some configurations from the input calendar. For example:
+In addition to the builder functions, `KamVision` receives some configurations. For example:
 
 ```kotlin
-// shows a Persian calendar, but in English language, which leads to LTR direction
-val calendar = PersianCalendar(Locale.ENGLISH).also {
-    it.year = 1398                       // determines starting year
-    it.month = 7                         // determines starting month
-    it.firstDayOfWeek = Calendar.MONDAY  // sets first day of week to Monday
-}
-
-val datePicker = PrimeDatePicker.bottomSheetWith(calendar)
-        ...
-        .build()
+// shows a Preview in jetpack compose AndroidView
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            factory = { ctx ->
+                // Create the TextureView
+                TextureView(ctx).also {
+                    textureView = it
+                }
+            },
+            modifier = Modifier.fillMaxSize(),
+            update = { textureView ->
+                if (cameraService == null) {
+                    cameraService = CameraService.Builder(
+                        context = textureView.context,
+                        textureView = textureView,
+                        scope = coroutineScope
+                    ).build()
 ```
 
 <br/>
 
 
-- calendar animations & transition parameters
-- *etc*
+Read more about these two important topics to better understand the funcionality of this Library:
 
-In this way, a set of customizable theme factory classes are provided to specify theme parameters.
-By default, there are two concrete subclasses for the them factory:
-
-- [`DarkThemeFactory`](library/src/main/java/com/aminography/primedatepicker/picker/theme/DarkThemeFactory.kt)
-- [`LightThemeFactory`](library/src/main/java/com/aminography/primedatepicker/picker/theme/LightThemeFactory.kt)
+- [`Camera2`](https://developer.android.com/media/camera/camera2)
+- [`AndroidView`](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)
 
 You can override their parameters, or inherit a class from, or make your own theme factory.
 
