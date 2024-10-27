@@ -1,20 +1,19 @@
 # `KamVision` :zap:
 [![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) [![Read my article](https://img.shields.io/badge/Read%20my%20article-brightgreen.svg)](https://medium.com/@kamyab9k)
-[![Android Weekly](https://img.shields.io/badge/Android%20Weekly-%23367-red.svg)](http://androidweekly.net/issues/issue-367)
 ![mavenCentral](https://img.shields.io/maven-central/v/com.aminography/primedatepicker?color=blue)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c1c44ee8a3a14b0e8c963c36c8e586d8)](https://app.codacy.com/manual/aminography/PrimeDatePicker?utm_source=github.com&utm_medium=referral&utm_content=aminography/PrimeDatePicker&utm_campaign=Badge_Grade_Dashboard)
 [![API](https://img.shields.io/badge/minSdkVersion-13-important.svg)](https://android-arsenal.com/api?level=13)
 
-Firstly, **`KamVision`** is a tool that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frames capturing` as a one line call in your projects.
-![](static/prime_logo.png)
+Firstly, **`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frames capturing` as a one line call in your projects.
+                       ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)
 
 <table>
 
   <tr>
-    <td><b>Multiple Days | Civil</b><br/><i>BottomSheet | Dark</i></td>
-    <td><b>Range of Days | Persian</b><br/><i>BottomSheet | Light</i></td>
-    <td><b>Single Day | Hijri</b><br/><i>Dialog | Light</i></td>
-    <td><b>Goto Feature | Japanese</b><br/><i>Dialog | Dark</i></td>
+    <td><b>Multiple Frames | Bitmap
+    <td><b>Single Frame | Bitmap
+    <td><b>Start Preview | AndroidView
+    <td><b>Stop Preview | AndroidView
   </tr>
 
   <tr>
@@ -37,26 +36,24 @@ Table of Contents
 - [Usage](#usage)
    - [Builder Configurations](#builder-configurations)
    - [Input Calendar Configurations](#input-calendar-configurations)
-- [Customizing Theme](#customizing-theme)
-   - [Customizing Texts](#customizing-texts)
 - [Change Log](#change-log)
-
 <br/>
 
 Core Logic
 ----------
-The ❤️ of this library is provided by [**PrimeCalendar**](https://github.com/aminography/PrimeCalendar).
+The ❤️ of this library is provided by [**Camera2 Api**](https://developer.android.com/media/camera/camera2).
 
 <br/>
 
 Main Characteristics
 --------------------
-- Start Preview with one line
-- Frame taking
-- Return list of frames
+- Start Camera Preview with only one line function call
+- Stop Camera Preview
+- Single frame capturing
+- Multiple frame capturing
+- Full compatibality with jetpack compose
 - Fluent UI
 - Optimized with coroutines
-- Compatibality with jetpack compose
 
 #### :dart: Download [SampleApp.apk](https://github.com/aminography/PrimeDatePicker/releases/download/v3.4.0/sample-app-release.apk)
 
@@ -221,7 +218,7 @@ There are several builder functions applying relevant configurations on the date
 
 ### Input Calendar Configurations
 
-In addition to the builder functions, `PrimeDatePicker` receives some configurations from the input calendar. For example:
+In addition to the builder functions, `KamVision` receives some configurations from the input calendar. For example:
 
 ```kotlin
 // shows a Persian calendar, but in English language, which leads to LTR direction
