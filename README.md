@@ -298,11 +298,10 @@ val themeFactory = object : LightThemeFactory() {
 <br/>
 
 
-Change Log
+In Development
 ----------
 
-The change log is available [here](https://github.com/aminography/PrimeDatePicker/wiki/Change-Log).
-
+- Single image capturing 
 <br/>
 
 License
