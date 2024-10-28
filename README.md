@@ -39,7 +39,6 @@ Table of Contents
 - [Usage](#usage)
    - [Library functions](#Library-functions)
    - [Input KamVision Configurations](#input-KamVision-configurations)
-- [Change Log](#change-log)
 <br/>
 
 
