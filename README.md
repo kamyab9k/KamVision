@@ -4,17 +4,9 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c1c44ee8a3a14b0e8c963c36c8e586d8)](https://app.codacy.com/manual/aminography/PrimeDatePicker?utm_source=github.com&utm_medium=referral&utm_content=aminography/PrimeDatePicker&utm_campaign=Badge_Grade_Dashboard)
 [![API](https://img.shields.io/badge/minSdkVersion-24-important.svg)](https://android-arsenal.com/api?level=24)
 
-Firstly, **`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line call in your projects.
+**`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
                        ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)
 
-<table>
-
-  <tr>
-    <td><b>Multiple Frames | Bitmap
-    <td><b>Single Frame | Bitmap
-    <td><b>Start Preview | AndroidView
-    <td><b>Stop Preview | AndroidView
-  </tr>
 
   <tr>
     <td><img src="static/MCDB.gif"/></td>
@@ -27,6 +19,17 @@ Firstly, **`KamVision`** is a Library that provides easy access to complex Camer
 
 <br/>
 
+### Tech Stack
+
+| **Category**               | **Details**                                                                                                                |
+|----------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| **Core Technologies**      | Kotlin, Java, Coroutines, Flow, MVVM (Model-View-ViewModel), Jetpack Compose                                                     |
+| **Design Patterns**        | Singleton, Builder, Facade                                                                                                 |
+| **Preview and Image Handling** | Camera 2 Api, AndroidView for preview start/stop, Bitmap handling for single and multiple frames                         |
+
+<br/>
+
+
 Table of Contents
 -----------------
 
@@ -38,6 +41,11 @@ Table of Contents
    - [Input KamVision Configurations](#input-KamVision-configurations)
 - [Change Log](#change-log)
 <br/>
+
+
+
+
+
 
 Core Logic
 ----------
@@ -55,7 +63,7 @@ Main Characteristics
 - Fluent UI
 - Optimized with coroutines
 
-#### :dart: Download [SampleApp.apk](https://github.com/aminography/PrimeDatePicker/releases/download/v3.4.0/sample-app-release.apk)
+#### :dart: Download [SampleApp.apk](https://github.com/kamyab9k/KamVision/releases/download/sample-app-release.apk)
 
 <br/>
 
@@ -230,70 +238,6 @@ Read more about these two important topics to better understand the funcionality
 
 - [`Camera2`](https://developer.android.com/media/camera/camera2)
 - [`AndroidView`](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)
-
-You can override their parameters, or inherit a class from, or make your own theme factory.
-
-Here is an example of how to override theme parameters to customize it:
-
-```kotlin
-val themeFactory = object : LightThemeFactory() {
-
-    override val typefacePath: String?
-        get() = "fonts/Righteous-Regular.ttf"
-    
-    override val dialogBackgroundColor: Int
-        get() = getColor(R.color.yellow100)
-
-    override val calendarViewBackgroundColor: Int
-        get() = getColor(R.color.yellow100)
-
-    override val pickedDayBackgroundShapeType: BackgroundShapeType
-        get() = BackgroundShapeType.ROUND_SQUARE
-
-    override val calendarViewPickedDayBackgroundColor: Int
-        get() = getColor(R.color.green800)
-    
-    override val calendarViewPickedDayInRangeBackgroundColor: Int
-        get() = getColor(R.color.green400)
-
-    override val calendarViewPickedDayInRangeLabelTextColor: Int
-        get() = getColor(R.color.gray900)
-
-    override val calendarViewTodayLabelTextColor: Int
-        get() = getColor(R.color.purple200)
-
-    override val calendarViewWeekLabelFormatter: LabelFormatter
-        get() = { primeCalendar ->
-            when (primeCalendar[Calendar.DAY_OF_WEEK]) {
-                Calendar.SATURDAY,
-                Calendar.SUNDAY -> String.format("%s😍", primeCalendar.weekDayNameShort)
-                else -> String.format("%s", primeCalendar.weekDayNameShort)
-            }
-        }
-
-    override val calendarViewWeekLabelTextColors: SparseIntArray
-        get() = SparseIntArray(7).apply {
-            val red = getColor(R.color.red300)
-            val indigo = getColor(R.color.indigo500)
-            put(Calendar.SATURDAY, red)
-            put(Calendar.SUNDAY, red)
-            put(Calendar.MONDAY, indigo)
-            put(Calendar.TUESDAY, indigo)
-            put(Calendar.WEDNESDAY, indigo)
-            put(Calendar.THURSDAY, indigo)
-            put(Calendar.FRIDAY, indigo)
-        }
-
-    override val calendarViewShowAdjacentMonthDays: Boolean
-        get() = true
-
-    override val selectionBarBackgroundColor: Int
-        get() = getColor(R.color.brown600)
-
-    override val selectionBarRangeDaysItemBackgroundColor: Int
-        get() = getColor(R.color.orange700)
-}
-```
 
 <br/>
 
