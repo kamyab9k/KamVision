@@ -2,6 +2,7 @@ package com.example.kamlib.presentation.view
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.Image
@@ -22,6 +23,8 @@ class ImageCapture(
     private val context: Context
         get() = textureView.context // Retrieves context from TextureView
     private var imageReader: ImageReader? = null
+    private val cameraPreview: CameraPreview =
+        CameraPreview(context, textureView)
 
     // Define the ORIENTATIONS mapping
     private val ORIENTATIONS = SparseIntArray().apply {
@@ -49,20 +52,15 @@ class ImageCapture(
 
         captureRequestBuilder.addTarget(imageReader.surface)
 
-        // Configure the image reader listener to process the captured image
-        imageReader.setOnImageAvailableListener({ reader ->
-            val image: Image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
-            val bitmap = convertImageToBitmap(image)
-            image.close()
-            viewModel.onImageCaptured(bitmap) // Use ViewModel to handle the captured image
-        }, null)
-
         val rotation = (context.getSystemService(WindowManager::class.java).defaultDisplay.rotation)
         captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation))
 
+        val texture = textureView.surfaceTexture
+
+
         try {
             cameraDevice.createCaptureSession(
-                listOf(imageReader.surface),
+                listOf(imageReader.surface,),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
                         session.capture(captureRequestBuilder.build(), null, null)
@@ -78,6 +76,12 @@ class ImageCapture(
         } catch (e: CameraAccessException) {
             e.printStackTrace()
         }
+        imageReader.setOnImageAvailableListener({ reader ->
+            val image: Image = reader.acquireLatestImage() ?: return@setOnImageAvailableListener
+            val bitmap = convertYUV420ToBitmap(image)
+            image.close()
+            viewModel.onImageCaptured(bitmap)
+        }, null)
     }
 
 //    private fun Image.toBitmap(): Bitmap {
@@ -95,19 +99,44 @@ class ImageCapture(
 //        return bitmap
 //    }
 
-    private fun convertImageToBitmap(image: Image): Bitmap {
-        // Your implementation for converting Image to Bitmap
-        val buffer: ByteBuffer = image.planes[0].buffer
-        val bytes = ByteArray(buffer.remaining())
-        buffer.get(bytes)
+    fun convertYUV420ToBitmap(image: Image): Bitmap {
+        val width = image.width
+        val height = image.height
 
-        // Convert byte array to Bitmap here (using a suitable method)
-        // You might use BitmapFactory or any other suitable method to create a Bitmap from bytes
+        val yPlane = image.planes[0]
+        val uPlane = image.planes[1]
+        val vPlane = image.planes[2]
 
-        return Bitmap.createBitmap(
-            512,
-            512,
-            Bitmap.Config.ARGB_8888
-        ) // Replace with your actual bitmap creation
+        val yBuffer = yPlane.buffer
+        val uBuffer = uPlane.buffer
+        val vBuffer = vPlane.buffer
+
+        val yRowStride = yPlane.rowStride
+        val uvRowStride = uPlane.rowStride
+        val uvPixelStride = uPlane.pixelStride
+
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+
+        for (j in 0 until height) {
+            for (i in 0 until width) {
+                val yIndex = j * yRowStride + i
+                val y = yBuffer.get(yIndex).toInt() and 0xFF
+
+                // U and V are subsampled by a factor of 2 in both dimensions
+                val uvIndex = (j / 2) * uvRowStride + (i / 2) * uvPixelStride
+
+                val u = uBuffer.get(uvIndex).toInt() and 0xFF
+                val v = vBuffer.get(uvIndex).toInt() and 0xFF
+
+                // Convert YUV to RGB
+                val r = (y + 1.370705 * (v - 128)).toInt().coerceIn(0, 255)
+                val g = (y - 0.337633 * (u - 128) - 0.698001 * (v - 128)).toInt().coerceIn(0, 255)
+                val b = (y + 1.732446 * (u - 128)).toInt().coerceIn(0, 255)
+
+                bitmap.setPixel(i, j, Color.rgb(r, g, b))
+            }
+        }
+
+        return bitmap
     }
 }

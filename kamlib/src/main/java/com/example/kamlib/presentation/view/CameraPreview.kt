@@ -1,8 +1,10 @@
 package com.example.kamlib.presentation.view
 
 import android.annotation.SuppressLint
+import android.content.ContentValues.TAG
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCaptureSession
@@ -10,7 +12,10 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
+import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.StreamConfigurationMap
+import android.media.Image
+import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -50,13 +55,13 @@ class CameraPreview(
     private val viewModel: CameraViewModel =
         ViewModelProvider(context as ViewModelStoreOwner)[CameraViewModel::class.java]
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
-    private var isPreviewStopped = false // Flag to track if preview is stopped
-    private lateinit var imageCapture: ImageCapture // Declare ImageCapture instance
+    private var isPreviewStopped = false
+    private lateinit var imageCapture: ImageCapture
 
     fun startCameraPreview() {
         if (isPreviewStopped) {
             Log.d("CameraPreview", "Preview is stopped. Not starting again.")
-            return // Don't start the preview if it was stopped
+            return
         }
         if (textureView.isAvailable) {
             openCamera(textureView.width, textureView.height)
@@ -67,7 +72,7 @@ class CameraPreview(
                     width: Int,
                     height: Int,
                 ) {
-                    if (!isPreviewStopped) { // Ensure preview is not stopped
+                    if (!isPreviewStopped) {
                         openCamera(width, height)
                     }
                 }
@@ -114,8 +119,6 @@ class CameraPreview(
                     cameraOpenCloseLock.release()
                     cameraDevice = camera
                     createCameraPreviewSession(map, width, height)
-                    //TODO: in order to capture image (after) preview is available,change below line's place
-//                    imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
                 }
 
                 override fun onDisconnected(camera: CameraDevice) {
@@ -125,6 +128,16 @@ class CameraPreview(
                 }
 
                 override fun onError(camera: CameraDevice, error: Int) {
+                    val errorMsg = when (error) {
+                        ERROR_CAMERA_DEVICE -> "Fatal (device)"
+                        ERROR_CAMERA_DISABLED -> "Device policy"
+                        ERROR_CAMERA_IN_USE -> "Camera in use"
+                        ERROR_CAMERA_SERVICE -> "Fatal (service)"
+                        ERROR_MAX_CAMERAS_IN_USE -> "Maximum cameras in use"
+                        else -> "Unknown"
+                    }
+                    Log.e(TAG, "Error when trying to connect camera $errorMsg")
+
                     cameraOpenCloseLock.release()
                     camera.close()
                     cameraDevice = null
@@ -137,7 +150,7 @@ class CameraPreview(
         }
     }
 
-    private fun createCameraPreviewSession(map: StreamConfigurationMap, width: Int, height: Int) {
+    fun createCameraPreviewSession(map: StreamConfigurationMap, width: Int, height: Int) {
         try {
             val texture = textureView.surfaceTexture
             val previewSize =
@@ -158,6 +171,11 @@ class CameraPreview(
                 listOf(surface),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
+//                        if (captureRequestBuilder != null) {
+//                            session.capture(captureRequestBuilder.build(), null, null)
+//                        }
+//                        startCameraPreview()
+
                         if (cameraDevice == null) return
                         cameraCaptureSession = session
                         try {
@@ -169,7 +187,7 @@ class CameraPreview(
                                 ?.let { session.setRepeatingRequest(it, null, backgroundHandler) }
 
                             // Now that preview is ready, initialize ImageCapture and capture image
-                            imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
+//                            imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
 
                         } catch (e: CameraAccessException) {
                             e.printStackTrace()
@@ -266,6 +284,21 @@ class CameraPreview(
         }
     }
 
+
+    private fun handleImageCapture(image: Image) {
+        // Convert the image to a Bitmap or save it as needed
+        // This is just a placeholder for handling your captured image
+        val planes = image.planes
+        val buffer = planes[0].buffer
+        val bytes = ByteArray(buffer.remaining())
+        buffer.get(bytes)
+
+        // Here you can convert the byte array to a Bitmap or save it
+        // For example, saving to a file (this is just illustrative)
+        // saveImageToFile(bytes)
+    }
+
+
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)
         fun onFramesCaptured(frames: List<Bitmap>)
@@ -274,6 +307,7 @@ class CameraPreview(
     fun setFrameCaptureListener(listener: FrameCaptureListener) {
         frameCaptureListener = listener
     }
+
 
     fun stopCameraPreview() {
         try {
