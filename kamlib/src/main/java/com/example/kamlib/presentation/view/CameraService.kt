@@ -6,14 +6,14 @@ import android.view.TextureView
 import androidx.lifecycle.LifecycleObserver
 import kotlinx.coroutines.CoroutineScope
 
-
 class CameraService private constructor(
     private val context: Context,
     private val textureView: TextureView,
     scope: CoroutineScope,
+    private var isFrontCamera: Boolean,
 ) : LifecycleObserver {
-    private val cameraPreview: CameraPreview =
-        CameraPreview(context, textureView)
+    private var cameraPreview: CameraPreview =
+        CameraPreview(context, textureView, isFrontCamera)
     private val frameCaptureManager: FrameCaptureManager =
         FrameCaptureManager(textureView, 512, 512, context)
 
@@ -33,54 +33,49 @@ class CameraService private constructor(
         frameCaptureManager.getCapturedFrames(onFramesCaptured)
     }
 
-//    fun captureImage() {
-//        cameraPreview.captureImage(context)
-//    }
+    fun switchCamera() {
+        stopCameraPreview()
+        isFrontCamera = !isFrontCamera
+        cameraPreview = CameraPreview(context, textureView, isFrontCamera)
+        startPreview()
+    }
 
-    // Frame capture listener interface
     interface FrameCaptureListener {
         fun onFrameCaptured(bitmap: Bitmap)
     }
 
-    // Builder class for CameraController to customize behavior
     class Builder(
         private val context: Context,
         private val textureView: TextureView,
         private val scope: CoroutineScope,
     ) {
-        private var resolution: Resolution? = null
-        private var frameRate: Int? = null
-        private var frameCaptureListener: FrameCaptureListener? = null
+        private var isFrontCamera: Boolean = false
 
         fun setResolution(resolution: Resolution) = apply {
-            this.resolution = resolution
+            // Logic for setting resolution
         }
 
         fun setFrameRate(frameRate: Int) = apply {
-            this.frameRate = frameRate
+            // Logic for setting frame rate
         }
 
         fun setFrameCaptureListener(listener: FrameCaptureListener) = apply {
-            this.frameCaptureListener = listener
+            // Logic for setting frame capture listener
         }
 
-        //        fun enableAutoBrightness(enable: Boolean) = apply {
-//            // Logic for enabling auto-brightness
-//        }
-//
-//        fun enableFaceDetection(enable: Boolean) = apply {
-//            // Logic for enabling face detection
-//        }
+        fun setFrontCamera(isFront: Boolean) = apply {
+            this.isFrontCamera = isFront
+        }
+
         fun build(): CameraService {
             return CameraService(
                 context = context,
                 textureView = textureView,
-                scope = scope
+                scope = scope,
+                isFrontCamera = isFrontCamera
             )
         }
     }
 }
 
-// Helper class to define camera resolution
 data class Resolution(val width: Int, val height: Int)
-

@@ -21,7 +21,7 @@ class ImageCapture(
     private val viewModel: CameraViewModel,
 ) {
     private val context: Context
-        get() = textureView.context // Retrieves context from TextureView
+        get() = textureView.context
     private var imageReader: ImageReader? = null
     private val cameraPreview: CameraPreview =
         CameraPreview(context, textureView)

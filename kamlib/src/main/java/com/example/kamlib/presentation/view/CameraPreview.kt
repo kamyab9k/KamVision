@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
 import android.graphics.SurfaceTexture
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCaptureSession
@@ -12,10 +11,8 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
 import android.hardware.camera2.CaptureRequest
-import android.hardware.camera2.TotalCaptureResult
 import android.hardware.camera2.params.StreamConfigurationMap
 import android.media.Image
-import android.media.ImageReader
 import android.os.Handler
 import android.os.HandlerThread
 import android.util.Log
@@ -25,6 +22,7 @@ import android.view.TextureView
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import com.example.kamlib.presentation.util.VideoScale
 import com.example.kamlib.presentation.viewmodel.CameraViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,8 +37,8 @@ import kotlin.math.abs
 class CameraPreview(
     context: Context,
     private val textureView: TextureView,
+    private val isFrontCamera: Boolean = false,
 ) : LifecycleObserver {
-    private val isFrontCamera: Boolean = false
     private val cameraManager: CameraManager =
         context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     private var cameraDevice: CameraDevice? = null
@@ -59,6 +57,7 @@ class CameraPreview(
     private lateinit var imageCapture: ImageCapture
 
     fun startCameraPreview() {
+        startBackgroundThread()
         if (isPreviewStopped) {
             Log.d("CameraPreview", "Preview is stopped. Not starting again.")
             return
@@ -87,7 +86,6 @@ class CameraPreview(
 
                 override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
                     stopCameraPreview()
-                    stopBackgroundThread()
                     return true
                 }
 
@@ -103,6 +101,12 @@ class CameraPreview(
             }
         }
     }
+
+    private fun startBackgroundThread() {
+        backgroundThread = HandlerThread("CameraBackground").also { it.start() }
+        backgroundHandler = Handler(backgroundThread!!.looper)
+    }
+
 
     @SuppressLint("MissingPermission")
     fun openCamera(width: Int, height: Int) {
@@ -171,11 +175,6 @@ class CameraPreview(
                 listOf(surface),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
-//                        if (captureRequestBuilder != null) {
-//                            session.capture(captureRequestBuilder.build(), null, null)
-//                        }
-//                        startCameraPreview()
-
                         if (cameraDevice == null) return
                         cameraCaptureSession = session
                         try {
@@ -185,9 +184,6 @@ class CameraPreview(
                             )
                             captureRequestBuilder?.build()
                                 ?.let { session.setRepeatingRequest(it, null, backgroundHandler) }
-
-                            // Now that preview is ready, initialize ImageCapture and capture image
-//                            imageCapture = ImageCapture(cameraDevice!!, textureView, viewModel)
 
                         } catch (e: CameraAccessException) {
                             e.printStackTrace()
@@ -211,14 +207,13 @@ class CameraPreview(
             for (id in cameraIds) {
                 val characteristics = cameraManager.getCameraCharacteristics(id)
                 val facing = characteristics.get(CameraCharacteristics.LENS_FACING)
-                if (isFrontCamera) {
-                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
-                        return id
-                    }
+                val desiredFacing = if (isFrontCamera) {
+                    CameraCharacteristics.LENS_FACING_FRONT
                 } else {
-                    if (facing != null && facing == CameraCharacteristics.LENS_FACING_BACK) {
-                        return id
-                    }
+                    CameraCharacteristics.LENS_FACING_BACK
+                }
+                if (facing == desiredFacing) {
+                    return id
                 }
             }
         } catch (e: CameraAccessException) {
@@ -284,20 +279,12 @@ class CameraPreview(
         }
     }
 
-
     private fun handleImageCapture(image: Image) {
-        // Convert the image to a Bitmap or save it as needed
-        // This is just a placeholder for handling your captured image
         val planes = image.planes
         val buffer = planes[0].buffer
         val bytes = ByteArray(buffer.remaining())
         buffer.get(bytes)
-
-        // Here you can convert the byte array to a Bitmap or save it
-        // For example, saving to a file (this is just illustrative)
-        // saveImageToFile(bytes)
     }
-
 
     interface FrameCaptureListener {
         fun onFrameCaptured(frame: Bitmap)
@@ -308,15 +295,15 @@ class CameraPreview(
         frameCaptureListener = listener
     }
 
-
     fun stopCameraPreview() {
         try {
-            isPreviewStopped = true // Set the flag to true when preview is stopped
+            isPreviewStopped = true
             cameraOpenCloseLock.acquire()
             cameraCaptureSession?.close()
             cameraCaptureSession = null
             cameraDevice?.close()
             cameraDevice = null
+            stopBackgroundThread()
         } catch (e: InterruptedException) {
             throw RuntimeException("Interrupted while trying to lock camera closing.")
         } finally {
