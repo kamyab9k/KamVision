@@ -46,6 +46,7 @@ Main Characteristics
 --------------------
 - Start Camera Preview with only one line function call
 - Stop Camera Preview
+- Switch between front and back Camera Lens
 - Single frame capturing
 - Multiple frame capturing
 - Full compatibality with jetpack compose
