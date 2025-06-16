@@ -72,72 +72,132 @@ dependencies {
 Usage
 -----
 
-To enjoy `KamVision` in jetpack compose, create an instance using a builder pattern in simple 4 steps.
+`KamVision` makes integrating the Camera2 API into your Jetpack Compose applications simple. Follow these three simple steps to get your camera preview up and running quickly.
 
-1. First create an  **AndroidView** and **TextureView** in a Box(Composable) to later pass it to the Library function parameters:
+
+1. Request Camera Permissions:
 ```kotlin
-// To create textureView to pass later on
-var textureView: TextureView? by remember { mutableStateOf(null) }
+class MainActivity : ComponentActivity() {
 
+    private val requestCameraPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            // Handle permission result if needed, but the LaunchedEffect will re-evaluate
+        }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val cameraPermissionGranted = remember { mutableStateOf(false) }
+
+            LaunchedEffect(Unit) {
+                cameraPermissionGranted.value = isCameraPermissionGranted()
+                if (!cameraPermissionGranted.value) {
+                    requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            }
+
+            if (cameraPermissionGranted.value) {
+                CameraPreview()
+            } else {
+                Text("Camera permission is required to use this feature.")
+            }
+        }
+    }
+
+    private fun isCameraPermissionGranted(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+}
+```
+
+2. Integrate KamVision's Camera Preview"
+```kotlin
 @Composable
 fun CameraPreview() {
-    val coroutineScope =
-        rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope()
+    var cameraService: CameraService? by remember { mutableStateOf(null) }
     var textureView: TextureView? by remember { mutableStateOf(null) }
 
-    // Use Box to ensure that the preview fills the entire screen
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
-                // Create the TextureView
+                // Create the TextureView that KamVision will use
                 TextureView(ctx).also {
                     textureView = it
                 }
             },
             modifier = Modifier.fillMaxSize(),
-            update = { textureView ->
-                   }
+            update = { currentTextureView ->
+                // Initialize CameraService using its Builder pattern
+                if (cameraService == null) {
+                    cameraService = CameraService.Builder(
+                        context = currentTextureView.context,
+                        textureView = currentTextureView,
+                        scope = coroutineScope
+                    )
+                        .setFrontCamera(true) // Set to 'true' for front camera, 'false' for back
+                        .build()
+                }
             }
         )
     }
 }
 ```
 
-2. Create instance of the Library:
-```kotlin
-    var cameraService: CameraService? by remember { mutableStateOf(null) }
-
-    var textureView: TextureView? by remember { mutableStateOf(null) }
-...
-```
-
-3. Build the Lib in the update block :
+3. Leverage KamVision Functions:
 
 ```kotlin
 ...
-
- update = { textureView ->
+            modifier = Modifier.fillMaxSize(),
+            update = { currentTextureView ->
                 if (cameraService == null) {
                     cameraService = CameraService.Builder(
-                        context = textureView.context,
-                        textureView = textureView,
+                        context = currentTextureView.context,
+                        textureView = currentTextureView,
                         scope = coroutineScope
-                    ).build()
-...
-```
+                    )
+                        .setFrontCamera(true)
+                        .build()
 
-4. finally call the Library functions:
-```kotlin
-...
+                    // Start the camera preview once the service is built
                     cameraService?.startPreview()
+                }
 
-                    cameraService?.captureFrame(20)
+                // Example: Capture 50 frames
+                cameraService?.captureFrame(50)
 
-                    cameraService!!.getCapturedFrames { frames: List<Bitmap> ->
-//                  Handle captured frames here
+                // Example: Get captured frames
+                cameraService?.getCapturedFrames { frames: List<Bitmap> ->
+                    println("Hi  $frames")
+                    println("Hi, captured ${frames.size} frames!")
+                    // Process your captured frames here
+                }
+            }
+        )
 
+        // Example: Add a button to switch cameras
+        Button(
+            onClick = {
+                coroutineScope.launch {
+                    cameraService?.switchCamera()
+                }
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Text("Switch Camera")
+        }
+    }
+
+    // Stop the camera preview when the composable leaves the composition
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraService?.stopCameraPreview()
+        }
+    }
 }
-...
 ```
 
 <br/>
