@@ -227,7 +227,7 @@ Read more about these three important topics to better understand the funcionali
 
 - [`Camera2`](https://developer.android.com/media/camera/camera2)
 - [`AndroidView`](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)
-- [Jetpack Compose`](https://developer.android.com/develop/ui/compose/documentation)
+- [`Jetpack Compose`](https://developer.android.com/develop/ui/compose/documentation)
 <br/>
 
 
