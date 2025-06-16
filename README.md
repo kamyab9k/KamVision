@@ -223,18 +223,18 @@ In addition to the builder functions, `KamVision` receives some configurations. 
 <br/>
 
 
-Read more about these two important topics to better understand the funcionality of this Library:
+Read more about these three important topics to better understand the funcionality of this Library:
 
 - [`Camera2`](https://developer.android.com/media/camera/camera2)
 - [`AndroidView`](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)
-
+- [Jetpack Compose`](https://developer.android.com/develop/ui/compose/documentation)
 <br/>
 
 
 In Development
 ----------
 
-- Single image capturing 
+- Video capturing & more
 <br/>
 
 License
