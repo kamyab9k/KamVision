@@ -240,7 +240,7 @@ In Development
 License
 --------
 ```
-Copyright 2024 Moahammad Khosravi
+Copyright 2024 Mohammad Khosravi
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
