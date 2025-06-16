@@ -48,7 +48,7 @@ Main Characteristics
 - Stop Camera Preview
 - Switch between front and back Camera Lens
 - Single frame capturing
-- Multiple frame capturing
+- Multiple frame capturing based on a user-defined number
 - Full compatibality with jetpack compose
 - Fluent UI
 - Optimized with coroutines
