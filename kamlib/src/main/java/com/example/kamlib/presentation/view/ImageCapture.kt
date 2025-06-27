@@ -23,8 +23,8 @@ class ImageCapture(
     private val context: Context
         get() = textureView.context
     private var imageReader: ImageReader? = null
-    private val cameraPreview: CameraPreview =
-        CameraPreview(context, textureView)
+//    private val cameraPreview: CameraPreview =
+//        CameraPreview(context, textureView)
 
     // Define the ORIENTATIONS mapping
     private val ORIENTATIONS = SparseIntArray().apply {
@@ -49,18 +49,15 @@ class ImageCapture(
         val captureRequestBuilder =
             cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         val imageReader = this.imageReader ?: return
-
         captureRequestBuilder.addTarget(imageReader.surface)
-
         val rotation = (context.getSystemService(WindowManager::class.java).defaultDisplay.rotation)
         captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation))
 
         val texture = textureView.surfaceTexture
 
-
         try {
             cameraDevice.createCaptureSession(
-                listOf(imageReader.surface,),
+                listOf(imageReader.surface),
                 object : CameraCaptureSession.StateCallback() {
                     override fun onConfigured(session: CameraCaptureSession) {
                         session.capture(captureRequestBuilder.build(), null, null)
@@ -136,7 +133,6 @@ class ImageCapture(
                 bitmap.setPixel(i, j, Color.rgb(r, g, b))
             }
         }
-
         return bitmap
     }
 }

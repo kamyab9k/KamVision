@@ -11,6 +11,8 @@ composeBom = "2024.04.01"
 appcompat = "1.6.1"
 material = "1.10.0"
 lifecycleViewmodelAndroid = "2.8.5"
+vanniktech-maven-publish = "0.28.0"
+
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -36,4 +38,5 @@ androidx-lifecycle-viewmodel-android = { group = "androidx.lifecycle", name = "l
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
-
+vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech-maven-publish" }
+dokka = { id = "org.jetbrains.dokka", version = "1.9.0" }
