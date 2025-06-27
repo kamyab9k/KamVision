@@ -81,7 +81,13 @@ fun CameraPreview() {
                         textureView = textureView,
                         scope = coroutineScope
                     )
-                        .setFrontCamera(true) // Or true to start with the front camera
+                        .setFrontCamera(false)
+                        .setAutoBrightnessMode(true)
+                        .setAutoFocusMode(true)
+                        // 0: OFF
+                        // 1: Single Flash light
+                        // 2: Torch
+                        .setFlashMode(2)
                         .build()
                     cameraService?.startPreview()
                 }
@@ -90,7 +96,6 @@ fun CameraPreview() {
                     println("Hi  $frames")
                 }
             }
-
         )
         Button(
             onClick = {
@@ -102,7 +107,6 @@ fun CameraPreview() {
         ) {
             Text("Switch Camera")
         }
-
     }
 
     DisposableEffect(Unit) {

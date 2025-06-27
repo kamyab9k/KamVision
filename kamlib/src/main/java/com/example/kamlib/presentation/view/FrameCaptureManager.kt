@@ -3,7 +3,6 @@ package com.example.kamlib.presentation.view
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
-import android.media.Image
 import android.media.ImageReader
 import android.view.TextureView
 import androidx.lifecycle.ViewModelProvider

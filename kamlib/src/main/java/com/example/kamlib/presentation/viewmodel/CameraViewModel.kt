@@ -8,12 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 class CameraViewModel : ViewModel() {
     private val _isCapturingState = MutableStateFlow(false)
     val isCapturingState: StateFlow<Boolean> get() = _isCapturingState
-
     private var _frameCount = MutableStateFlow(0)
     val frameCount: StateFlow<Int> get() = _frameCount
-
     private val _capturedFrames = MutableStateFlow<MutableList<Bitmap>>(mutableListOf())
-    private val  capturedFrames: StateFlow<MutableList<Bitmap>> get() = _capturedFrames
+    private val capturedFrames: StateFlow<MutableList<Bitmap>> get() = _capturedFrames
 
     fun startCapturing() {
         _isCapturingState.value = true // Set to true when starting to capture
@@ -36,6 +34,7 @@ class CameraViewModel : ViewModel() {
             addAll(frames) // Add the list of frames to the current list
         }
     }
+
     fun onImageCaptured(bitmap: Bitmap) {
         // Handle the captured image bitmap here (e.g., save it, display it, etc.)
         // You can store it, process it, or update the UI accordingly.
@@ -49,5 +48,4 @@ class CameraViewModel : ViewModel() {
     fun clearCapturedFrames() {
         _capturedFrames.value.clear()
     }
-
 }
