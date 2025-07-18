@@ -1,6 +1,6 @@
 # `KamVision` :zap:
-[![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) [![Read my article](https://img.shields.io/badge/Read%20my%20article-brightgreen.svg)](https://medium.com/@kamyab9k)
-![Codacy Badge](https://api.codacy.com/project/badge/Grade/c1c44ee8a3a14b0e8c963c36c8e586d8)
+[![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) 
+<a href="https://www.linkedin.com/in/kamyab-khosravi-5214551a4/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white"/></a>
 [![API](https://img.shields.io/badge/minSdkVersion-24-important.svg)](https://developer.android.com/tools/releases/platforms#7.0)
 
 **`KamVision`** is a Library that provides easy access to complex Camera 2 API in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
