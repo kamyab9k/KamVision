@@ -38,7 +38,7 @@ Table of Contents
 
 Core Logic
 ----------
-The ❤️ of this library is provided by [**Camera2 Api**](https://developer.android.com/media/camera/camera2) & [**Jetpack Compose**](https://developer.android.com/develop/ui/compose/documentation)  .
+The core of this library is provided by [**Camera2 Api**](https://developer.android.com/media/camera/camera2) & [**Jetpack Compose**](https://developer.android.com/develop/ui/compose/documentation)  .
 
 <br/>
 
