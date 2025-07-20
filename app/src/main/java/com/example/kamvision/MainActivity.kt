@@ -29,22 +29,35 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private var cameraPermissionGranted = mutableStateOf(false)
     private val requestCameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            cameraPermissionGranted.value = isGranted
+            if (!isGranted) {
+                // Optionally, inform the user that permission is needed
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val cameraPermissionGranted = remember { mutableStateOf(false) }
+            val permissionGranted by remember { cameraPermissionGranted }
+
             LaunchedEffect(Unit) {
+                // Check initial permission status
                 cameraPermissionGranted.value = isCameraPermissionGranted()
                 if (!cameraPermissionGranted.value) {
                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
             }
-            if (cameraPermissionGranted.value) {
+
+            if (permissionGranted) {
                 CameraPreview()
+            } else {
+                // Optional: Show a message to the user while waiting for permission
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Camera permission is required to use this app.")
+                }
             }
         }
     }
@@ -64,29 +77,24 @@ fun CameraPreview() {
     var cameraService: CameraService? by remember { mutableStateOf(null) }
     var textureView: TextureView? by remember { mutableStateOf(null) }
 
-    // Use Box to ensure that the preview fills the entire screen
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
-                // Create the TextureView
                 TextureView(ctx).also {
                     textureView = it
                 }
             },
             modifier = Modifier.fillMaxSize(),
-            update = { textureView ->
+            update = { tv ->
                 if (cameraService == null) {
                     cameraService = CameraService.Builder(
-                        context = textureView.context,
-                        textureView = textureView,
+                        context = tv.context,
+                        textureView = tv,
                         scope = coroutineScope
                     )
                         .setFrontCamera(false)
                         .setAutoBrightnessMode(true)
                         .setAutoFocusMode(true)
-                        // 0: OFF
-                        // 1: Single Flash light
-                        // 2: Torch
                         .setFlashMode(2)
                         .build()
                     cameraService?.startPreview()
