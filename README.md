@@ -42,15 +42,15 @@ Main Characteristics
 
 Download
 --------
-**`KamVision`** is available on `MavenCentral` to download using build tools systems. Add the following lines to your `build.gradle` file:
+**`KamVision`** is available on `MavenCentral` to download using build tools systems. Add the following lines to your `Version Catalog` and `build.gradle` file:
 
 ```gradle
 
 [versions]
-KamVision = "1.0.0" 
+kamVision = "1.0.0" 
 
 [libraries]
-KamVision = { group = "io.github.kamyab9k", name = "KamVision", version.ref = "KamVision" }
+KamVision = { group = "io.github.kamyab9k", name = "KamVision", version.ref = "kamVision" }
 
 dependencies {
     implementation (Libs.KamVision)
