@@ -1,14 +1,14 @@
-import com.vanniktech.maven.publish.SonatypeHost
-
+// kamlib/build.gradle.kts
 plugins {
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.library) // Android Library plugin first
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.vanniktech.maven.publish)
-    id("org.jetbrains.dokka") version "1.9.20"
+    id("maven-publish") // Maven Publish plugin
+    id("signing")       // Signing plugin
+    id("org.jetbrains.dokka") version "1.9.20" // Dokka plugin
 }
 
 android {
-    namespace = "com.example.kamlib"
+    namespace = "io.github.kamyab9k.kamlib"
     compileSdk = 34
 
     defaultConfig {
@@ -19,14 +19,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
     }
-    // The publishing block tells the Android Gradle Plugin what to publish.
-    // The vanniktech plugin will use this configuration.
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-            withJavadocJar() // Dokka plugin will generate the Javadoc
-        }
-    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -55,48 +48,71 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 }
 
-// Configuration for the Maven Publish plugin
-mavenPublishing {
-    // Set the coordinates from gradle.properties
-    coordinates(
-        groupId = project.property("GROUP").toString(),
-        artifactId = "kamvision", // This is usually the module name
-        version = project.property("VERSION_NAME").toString()
-    )
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("maven") {
+                from(components["release"])
 
-    // Configure the POM (Project Object Model) with metadata for Maven Central
-    pom {
-        name.set(project.property("POM_NAME").toString())
-        description.set(project.property("POM_DESCRIPTION").toString())
-        url.set(project.property("POM_URL").toString())
+                groupId = project.properties["GROUP"].toString()
+                artifactId = project.properties["POM_ARTIFACT_ID"].toString()
+                version = project.properties["VERSION_NAME"].toString()
 
-        licenses {
-            license {
-                name.set(project.property("POM_LICENCE_NAME").toString())
-                url.set(project.property("POM_LICENCE_URL").toString())
-                distribution.set("repo")
+                pom {
+                    name.set(project.properties["POM_NAME"].toString())
+                    description.set(project.properties["POM_DESCRIPTION"].toString())
+                    url.set(project.properties["POM_URL"].toString())
+                    inceptionYear.set(project.properties["POM_INCEPTION_YEAR"].toString())
+
+                    licenses {
+                        license {
+                            name.set(project.properties["POM_LICENCE_NAME"].toString())
+                            url.set(project.properties["POM_LICENCE_URL"].toString())
+                            distribution.set(project.properties["POM_LICENSE_DIST"].toString())
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id.set(project.properties["POM_DEVELOPER_ID"].toString())
+                            name.set(project.properties["POM_DEVELOPER_NAME"].toString())
+                            email.set(project.properties["POM_DEVELOPER_EMAIL"].toString())
+                        }
+                    }
+
+                    scm {
+                        connection.set(project.properties["POM_SCM_CONNECTION"].toString())
+                        developerConnection.set(project.properties["POM_SCM_DEV_CONNECTION"].toString())
+                        url.set(project.properties["POM_SCM_URL"].toString())
+                    }
+                }
             }
         }
 
-        developers {
-            developer {
-                id.set(project.property("POM_DEVELOPER_ID").toString())
-                name.set(project.property("POM_DEVELOPER_NAME").toString())
-                email.set(project.property("POM_DEVELOPER_EMAIL").toString())
-            }
-        }
+        // Configure repositories for publishing
+        repositories {
+            maven {
+                val releasesRepoUrl =
+                    uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+                // For snapshots, https://central.sonatype.com/repository/maven-snapshots/ is the direct repo,
+                // but the staging API URL might also work for compatibility.
+                val snapshotsRepoUrl =
+                    uri("https://central.sonatype.com/repository/maven-snapshots/")
 
-        scm {
-            url.set(project.property("POM_SCM_URL").toString())
-            connection.set(project.property("POM_SCM_CONNECTION").toString())
-            developerConnection.set(project.property("POM_SCM_DEV_CONNECTION").toString())
+                url = if (version.toString()
+                        .endsWith("SNAPSHOT")
+                ) snapshotsRepoUrl else releasesRepoUrl
+
+                credentials {
+                    username = project.properties["mavenCentralUsername"].toString()
+                    password = project.properties["mavenCentralPassword"].toString()
+                }
+            }
         }
     }
 
-    // This automatically configures the plugin to publish to the new Central Portal.
-    // It reads your 'mavenCentralUsername' and 'mavenCentralPassword' (token) from gradle.properties.
-    publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
-
-    // This automatically finds your GPG signing configuration from gradle.properties and signs all artifacts.
-    signAllPublications()
+    signing {
+        useGpgCmd()
+        sign(publishing.publications["maven"])
+    }
 }
