@@ -19,23 +19,6 @@
 
 <br/>
 
-
-Table of Contents
------------------
-
-- [Core Logic](#core-logic)
-- [Main Characteristics](#main-characteristics)
-- [Download](#download)
-- [Usage](#usage)
-   - [Library functions](#Library-functions)
-   - [Input KamVision Configurations](#input-KamVision-configurations)
-<br/>
-
-
-
-
-
-
 Core Logic
 ----------
 The core of this library is provided by [**Camera2 Api**](https://developer.android.com/media/camera/camera2) & [**Jetpack Compose**](https://developer.android.com/develop/ui/compose/documentation)  .
@@ -80,27 +63,35 @@ Usage
 ```kotlin
 class MainActivity : ComponentActivity() {
 
+    private var cameraPermissionGranted = mutableStateOf(false)
     private val requestCameraPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            // Handle permission result if needed, but the LaunchedEffect will re-evaluate
+            cameraPermissionGranted.value = isGranted
+            if (!isGranted) {
+                // Optionally, inform the user that permission is needed
+            }
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val cameraPermissionGranted = remember { mutableStateOf(false) }
+            val permissionGranted by remember { cameraPermissionGranted }
 
             LaunchedEffect(Unit) {
+                // Check initial permission status
                 cameraPermissionGranted.value = isCameraPermissionGranted()
                 if (!cameraPermissionGranted.value) {
                     requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
             }
 
-            if (cameraPermissionGranted.value) {
+            if (permissionGranted) {
                 CameraPreview()
             } else {
-                Text("Camera permission is required to use this feature.")
+                // Optional: Show a message to the user while waiting for permission
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Camera permission is required to use this app.")
+                }
             }
         }
     }
@@ -118,68 +109,39 @@ class MainActivity : ComponentActivity() {
 ```kotlin
 @Composable
 fun CameraPreview() {
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope =
+        rememberCoroutineScope()
     var cameraService: CameraService? by remember { mutableStateOf(null) }
     var textureView: TextureView? by remember { mutableStateOf(null) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
-                // Create the TextureView that KamVision will use
                 TextureView(ctx).also {
                     textureView = it
                 }
             },
             modifier = Modifier.fillMaxSize(),
-            update = { currentTextureView ->
-                // Initialize CameraService using its Builder pattern
+            update = { tv ->
                 if (cameraService == null) {
                     cameraService = CameraService.Builder(
-                        context = currentTextureView.context,
-                        textureView = currentTextureView,
+                        context = tv.context,
+                        textureView = tv,
                         scope = coroutineScope
                     )
-                        .setFrontCamera(true) // Set to 'true' for front camera, 'false' for back
+                        .setFrontCamera(false)
+                        .setAutoBrightnessMode(true)
+                        .setAutoFocusMode(true)
+                        .setFlashMode(2)
                         .build()
-                }
-            }
-        )
-    }
-}
-```
-
-3. Leverage KamVision Functions:
-
-```kotlin
-...
-            modifier = Modifier.fillMaxSize(),
-            update = { currentTextureView ->
-                if (cameraService == null) {
-                    cameraService = CameraService.Builder(
-                        context = currentTextureView.context,
-                        textureView = currentTextureView,
-                        scope = coroutineScope
-                    )
-                        .setFrontCamera(true)
-                        .build()
-
-                    // Start the camera preview once the service is built
                     cameraService?.startPreview()
                 }
-
-                // Example: Capture 50 frames
                 cameraService?.captureFrame(50)
-
-                // Example: Get captured frames
                 cameraService?.getCapturedFrames { frames: List<Bitmap> ->
                     println("Hi  $frames")
-                    println("Hi, captured ${frames.size} frames!")
-                    // Process your captured frames here
                 }
             }
         )
-
-        // Example: Add a button to switch cameras
         Button(
             onClick = {
                 coroutineScope.launch {
@@ -192,7 +154,50 @@ fun CameraPreview() {
         }
     }
 
-    // Stop the camera preview when the composable leaves the composition
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraService?.stopCameraPreview()
+        }
+    }
+}
+```
+
+3. Leverage KamVision Functions:
+
+```kotlin
+...
+           update = { tv ->
+                if (cameraService == null) {
+                    cameraService = CameraService.Builder(
+                        context = tv.context,
+                        textureView = tv,
+                        scope = coroutineScope
+                   )
+            .setFrontCamera(false) // KamVision parameter: 'true' for front camera, 'false' for back camera
+            .setAutoBrightnessMode(true) // KamVision parameter: 'true' to enable auto brightness adjustment, 'false' otherwise
+            .setAutoFocusMode(true)      // KamVision parameter: 'true' to enable auto focus, 'false' otherwise
+            .setFlashMode(2)             // KamVision parameter: Sets the flash mode (0: OFF, 1: Single Flash, 2: Torch)
+            .build()                     // Builds the CameraService instance with the specified configurations
+        cameraService?.startPreview()    // KamVision function: Starts the camera preview
+    }
+    cameraService?.captureFrame(50)      // KamVision function: Captures the specified number of frames (e.g., 50 frames)
+    cameraService?.getCapturedFrames { frames: List<Bitmap> -> // KamVision function: Retrieves the list of captured frames
+        println("Hi  $frames")
+    }
+            }
+        )
+        Button(
+            onClick = {
+                coroutineScope.launch {
+            cameraService?.switchCamera() // KamVision function: Asynchronously switches between front and back cameras
+                }
+            },
+            modifier = Modifier.align(Alignment.BottomCenter)
+        ) {
+            Text("Switch Camera")
+        }
+    }
+
     DisposableEffect(Unit) {
         onDispose {
             cameraService?.stopCameraPreview()
