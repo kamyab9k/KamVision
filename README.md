@@ -45,9 +45,15 @@ Download
 **`KamVision`** is available on `MavenCentral` to download using build tools systems. Add the following lines to your `build.gradle` file:
 
 ```gradle
+
+[versions]
+KamVision = "1.0.0" 
+
+[libraries]
+KamVision = { group = "io.github.kamyab9k", name = "KamVision", version.ref = "KamVision" }
+
 dependencies {
-    implementation (Libs.)
-    implementation (Libs.)
+    implementation (Libs.KamVision)
 }
 ```
 
