@@ -50,10 +50,10 @@ Download
 kamVision = "1.0.0" 
 
 [libraries]
-KamVision = { group = "io.github.kamyab9k", name = "KamVision", version.ref = "kamVision" }
+KamVision = { group = "io.github.kamyab9k", name = "", version.ref = "kamVision" }
 
 dependencies {
-    implementation (Libs.KamVision)
+    implementation (Libs.)
 }
 ```
 
