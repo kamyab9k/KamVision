@@ -321,7 +321,7 @@ Read more about these three important topics to better understand the funcionali
 <br/>
 
 
-In Development
+In Development⚡️
 ----------
 
 - Video capturing & more
