@@ -2,10 +2,10 @@
 [![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) 
 <a href="https://www.linkedin.com/in/kamyab-khosravi-5214551a4/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white"/></a>
 [![API](https://img.shields.io/badge/minSdkVersion-24-important.svg)](https://developer.android.com/tools/releases/platforms#7.0)
-[![](https://jitpack.io/v/kamyab9k/KamVision.svg)](https://jitpack.io/#kamyab9k/KamVision)
+[![](https://jitpack.io/v/kamyab9k/KamVision.svg)](https://jitpack.io/#com.github.kamyab9k/KamVision)
 
 
-**`KamVision`** is a Library that provides easy access to complex Camera 2 API ([deliberately chosen over Camera X](#why-camera2-api-is-chosen-over-camera-x-)) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
+**`KamVision`** is a Library that provides easy access to complex Camera 2 API ([a strategic choice for low-level control in contrast to CameraX](#why-camera2-api-is-chosen-over-camera-x-)) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
                      <p align="center">  ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)</p>
 
 
@@ -63,7 +63,7 @@ Main Characteristics
 
 Download
 --------
-**`KamVision`** is available on [JitPack.io](https://jitpack.io/#kamyab9k/KamVision). To integrate it into your Android project, follow these steps:
+**`KamVision`** is available on [JitPack.io](https://jitpack.io/#com.github.kamyab9k/KamVision). To integrate it into your Android project, follow these steps:
 <br>
 1.  **Add the JitPack repository** to your **project-level `settings.gradle.kts`** file:
 ```gradle
