@@ -38,7 +38,8 @@ The core of this library is provided by [**Camera2 Api**](https://developer.andr
 - **Flexibility for Complex Use Cases**: If you're building something beyond standard photo/video capture, like custom computer vision pipelines, augmented reality applications, or specialized imaging tools, Camera2's granular control is essential<br>
 
 **The 👎 of Camera2 api**:
-1. It is more complex and time consuming to implement but i've already done it for you ;)
+   - It is more complex and time consuming to implement but i've already done it for you ;)
+
 
 <br>
 
