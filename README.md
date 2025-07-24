@@ -5,7 +5,7 @@
 [![](https://jitpack.io/v/kamyab9k/KamVision.svg)](https://jitpack.io/#kamyab9k/KamVision)
 
 
-**`KamVision`** is a Library that provides easy access to complex Camera 2 API (deliberately chosen over Camera X) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
+**`KamVision`** is a Library that provides easy access to complex Camera 2 API ([deliberately chosen over Camera X](#why-camera2-api-is-chosen-over-camera-x-)) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
                      <p align="center">  ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)</p>
 
 
@@ -15,7 +15,7 @@
 
 | **Category**               | **Details**                                                                                                                |
 |----------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| **Core Technologies**      | Kotlin, Java, Coroutines, Flow, MVVM (Model-View-ViewModel), Jetpack Compose                                                     |
+| **Core Technologies**      | Kotlin, Java, Coroutines, Flow, MVVM (Model-View-ViewModel), Jetpack Compose, Camera 2                                                     |
 | **Design Patterns**        | Singleton, Builder, Facade                                                                                                 |
 | **Preview and Image Handling** | Camera 2 Api, AndroidView for preview start/stop, Bitmap handling for single and multiple frames                         |
 
@@ -63,7 +63,7 @@ Main Characteristics
 
 Download
 --------
-**`KamVision`** is available on `MavenCentral` to download using build tools systems. Add the following lines to your `Version Catalog` and `build.gradle` file:
+**`KamVision`** is available on [JitPack.io](https://jitpack.io/#kamyab9k/KamVision). To integrate it into your Android project, follow these steps:
 <br>
 1.  **Add the JitPack repository** to your **project-level `settings.gradle.kts`** file:
 ```gradle
@@ -344,6 +344,7 @@ In Development⚡️
 ----------
 
 - Video capturing & more
+- Adding more parameters
 <br/>
 
 License
