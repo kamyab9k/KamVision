@@ -179,7 +179,7 @@ fun CameraPreview() {
                         textureView = tv,
                         scope = coroutineScope
                    )
-            .setFrontCamera(false) // KamVision parameter: 'true' for front camera, 'false' for back camera
+            .setFrontCamera(false)       // KamVision parameter: 'true' for front camera, 'false' for back camera
             .setAutoBrightnessMode(true) // KamVision parameter: 'true' to enable auto brightness adjustment, 'false' otherwise
             .setAutoFocusMode(true)      // KamVision parameter: 'true' to enable auto focus, 'false' otherwise
             .setFlashMode(2)             // KamVision parameter: Sets the flash mode (0: OFF, 1: Single Flash, 2: Torch)
