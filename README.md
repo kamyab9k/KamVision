@@ -25,6 +25,23 @@ The core of this library is provided by [**Camera2 Api**](https://developer.andr
 
 <br/>
 
+
+**Why Camera2 API is chosen over Camera X:**
+- **Low-Level Control**: Camera2 API provides direct, in-depth control over the camera hardware. You can manipulate almost every aspect of the camera pipeline, including:
+- **Manual Exposure Control**: Set ISO, shutter speed, and aperture (if supported by hardware) precisely. This is crucial for creative photography and specific lighting conditions.
+- **Manual Focus**: Achieve precise focus control, including setting specific focus distances.
+- **RAW Capture**: Access uncompressed RAW sensor data (DNG format), which offers the most flexibility for post-processing.
+- **Advanced Capture Request Parameters**: Control a vast array of parameters for each capture, such as white balance, color correction, noise reduction, edge enhancement, tone mapping, and more, using CaptureRequest.Builder.
+- **Stream Configuration**: Define custom output streams and formats for different use cases (e.g., high-resolution still image, real-time preview, video recording, image analysis).
+- **Metadata Access**: Get detailed metadata for each frame, including sensor timestamps, lens characteristics, and capture settings.
+- **Multi-camera Control**: For devices with multiple cameras, Camera2 gives you fine-grained control over which camera to use and how to combine their outputs.
+- **Flexibility for Complex Use Cases**: If you're building something beyond standard photo/video capture, like custom computer vision pipelines, augmented reality applications, or specialized imaging tools, Camera2's granular control is essential<br>
+
+**The 👎 of Camera2 api**:
+1. It is more complex and time consuming to implement but i've already done it for you ;)
+
+<br>
+
 Main Characteristics
 --------------------
 - Start Camera Preview with only one line function call
