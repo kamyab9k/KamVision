@@ -27,6 +27,7 @@ The core of this library is provided by [**Camera2 Api**](https://developer.andr
 
 
 **Why Camera2 API is chosen over Camera X:**
+----------
 - **Low-Level Control**: Camera2 API provides direct, in-depth control over the camera hardware. You can manipulate almost every aspect of the camera pipeline, including:
 - **Manual Exposure Control**: Set ISO, shutter speed, and aperture (if supported by hardware) precisely. This is crucial for creative photography and specific lighting conditions.
 - **Manual Focus**: Achieve precise focus control, including setting specific focus distances.
