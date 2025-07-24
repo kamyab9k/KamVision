@@ -38,8 +38,8 @@ android {
     }
     publishing {
         singleVariant("release") {
-            withSourcesJar() // Includes source code in the published artifact
-            withJavadocJar() // Includes Javadoc in the published artifact
+            withSourcesJar()
+            withJavadocJar()
         }
     }
 }
@@ -58,56 +58,39 @@ dependencies {
 afterEvaluate {
     publishing {
         publications {
-            create<MavenPublication>("release") { // Change "maven" to "release" to match singleVariant
+            create<MavenPublication>("release") {
                 from(components["release"])
 
-                // JitPack expects groupId, artifactId, and version based on GitHub info.
-                // While you can set them here, JitPack often overrides them to conform
-                // to its standard: com.github.YOUR_USERNAME:YOUR_REPO_NAME:YOUR_TAG.
-                // Keeping these can help with local testing, but they're not strictly
-                // necessary for JitPack to build if the convention is followed.
+                groupId = "com.github.kamyab9k"
+                artifactId = "KamVision"
+                version = project.version.toString()
 
-                // For JitPack, it's CRUCIAL that groupId is com.github.YOUR_GITHUB_USERNAME
-                // and artifactId is YOUR_REPO_NAME.
-                // version should match your Git tag.
-
-                groupId = "com.github.kamyab9k" // Must be com.github.YOUR_GITHUB_USERNAME
-                artifactId = "KamVision"       // Must be YOUR_REPO_NAME (case-sensitive)
-                version = project.version.toString() // JitPack uses Git tag for version.
-                // Use project.version or define directly.
-                // For consistency, define `version` at the project level,
-                // or use a property like `rootProject.extra["VERSION_NAME"]`
-                // if you truly want to use a property, though JitPack ignores it.
-
-                // You can keep the POM metadata if you want, JitPack will generate a POM.
-                // However, for JitPack, much of this is redundant as it's primarily used
-                // for Maven Central compliance. It won't hurt to keep it though.
                 pom {
-                    name.set(project.properties["POM_NAME"].toString())
-                    description.set(project.properties["POM_DESCRIPTION"].toString())
-                    url.set(project.properties["POM_URL"].toString())
-                    inceptionYear.set(project.properties["POM_INCEPTION_YEAR"].toString())
+                    name.set("KamVision")
+                    description.set("Android library for Camera2 API in Jetpack compose.")
+                    url.set("https://github.com/kamyab9k/KamVision")
+                    inceptionYear.set("2025")
 
                     licenses {
                         license {
-                            name.set(project.properties["POM_LICENCE_NAME"].toString())
-                            url.set(project.properties["POM_LICENCE_URL"].toString())
-                            distribution.set(project.properties["POM_LICENSE_DIST"].toString())
+                            name.set("The Apache License, Version 2.0")
+                            url.set("http://www.apache.org/licenses/LICENSE-2.0.txt")
+                            distribution.set("repo")
                         }
                     }
 
                     developers {
                         developer {
-                            id.set(project.properties["POM_DEVELOPER_ID"].toString())
-                            name.set(project.properties["POM_DEVELOPER_NAME"].toString())
-                            email.set(project.properties["POM_DEVELOPER_EMAIL"].toString())
+                            id.set("kamyab9k")
+                            name.set("Kamyab Khosravi")
+                            email.set("m.khosravi.dev@gmail.com")
                         }
                     }
 
                     scm {
-                        connection.set(project.properties["POM_SCM_CONNECTION"].toString())
-                        developerConnection.set(project.properties["POM_SCM_DEV_CONNECTION"].toString())
-                        url.set(project.properties["POM_SCM_URL"].toString())
+                        connection.set("scm:git:git://github.com/kamyab9k/KamVision.git")
+                        developerConnection.set("scm:git:ssh://github.com/kamyab9k/KamVision.git")
+                        url.set("https://github.com/kamyab9k/KamVision")
                     }
                 }
             }
@@ -116,8 +99,6 @@ afterEvaluate {
     }
 
 }
-
-
 
 
 // Below is for publishing to Maven Central which is postponed
