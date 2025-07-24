@@ -94,7 +94,7 @@ Download
 
 ```
     
-*Replace `LATEST_TAG` with the [actual version tag](https://jitpack.io/#com.github.kamyab9k/KamVision) you want to use (e.g., `v1.0.1`).
+   - Replace `LATEST_TAG` with the [actual version tag](https://jitpack.io/#com.github.kamyab9k/KamVision) you want to use (e.g., `v1.0.1`).
 
 <br/>
 
