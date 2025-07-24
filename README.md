@@ -63,7 +63,7 @@ Main Characteristics
 
 Download
 --------
-**`KamVision`** is available on [JitPack.io](https://jitpack.io/#com.github.kamyab9k/KamVision). To integrate it into your Android project, follow these steps:
+**`KamVision`** is available on [JitPack.io/KamVision](https://jitpack.io/#com.github.kamyab9k/KamVision). To integrate it into your Android project, follow these steps:
 <br>
 1.  **Add the JitPack repository** to your **project-level `settings.gradle.kts`** file:
 ```gradle
