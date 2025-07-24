@@ -2,6 +2,8 @@
 [![Medium](https://img.shields.io/badge/Medium-12100E.svg)](https://medium.com/@kamyab9k) 
 <a href="https://www.linkedin.com/in/kamyab-khosravi-5214551a4/"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-%230077B5.svg?logo=linkedin&logoColor=white"/></a>
 [![API](https://img.shields.io/badge/minSdkVersion-24-important.svg)](https://developer.android.com/tools/releases/platforms#7.0)
+[![](https://jitpack.io/v/kamyab9k/KamVision.svg)](https://jitpack.io/#kamyab9k/KamVision)
+
 
 **`KamVision`** is a Library that provides easy access to complex Camera 2 API (deliberately chosen over Camera X) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
                      <p align="center">  ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)</p>
@@ -26,7 +28,7 @@ The core of this library is provided by [**Camera2 Api**](https://developer.andr
 <br/>
 
 
-**Why Camera2 API is chosen over Camera X:**
+**Why Camera2 API is chosen over Camera X ?**
 ----------
 - **Low-Level Control**: Camera2 API provides direct, in-depth control over the camera hardware. You can manipulate almost every aspect of the camera pipeline, including:
 - **Manual Exposure Control**: Set ISO, shutter speed, and aperture (if supported by hardware) precisely. This is crucial for creative photography and specific lighting conditions.
@@ -62,20 +64,36 @@ Main Characteristics
 Download
 --------
 **`KamVision`** is available on `MavenCentral` to download using build tools systems. Add the following lines to your `Version Catalog` and `build.gradle` file:
-
+<br>
+1.  **Add the JitPack repository** to your **project-level `settings.gradle.kts`** file:
 ```gradle
+    // settings.gradle.kts
+    pluginManagement {
+        repositories {
+            // ... other repositories
+            maven { url = uri("[https://jitpack.io](https://jitpack.io)") }
+        }
+    }
+    dependencyResolutionManagement {
+        repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+        repositories {
+            // ... other repositories
+            maven { url = uri("[https://jitpack.io](https://jitpack.io)") }
+        }
+    }
 
-[versions]
-kamVision = "1.0.0" 
-
-[libraries]
-KamVision = { group = "io.github.kamyab9k", name = "", version.ref = "kamVision" }
-
-dependencies {
-    implementation (Libs.)
-}
 ```
 
+2.  **Add the dependency** to your **module-level `build.gradle.kts`** (e.g., `app/build.gradle.kts`):
+
+```
+// app/build.gradle.kts
+    dependencies {
+        implementation("com.github.kamyab9k:KamVision:YOUR_LATEST_TAG")
+    }
+    ```
+    *Replace `YOUR_LATEST_TAG` with the [actual version tag](https://jitpack.io/#kamyab9k/KamVision) you want to use (e.g., `v1.0.1`).
+```
 <br/>
 
 Usage
