@@ -86,14 +86,16 @@ Download
 
 2.  **Add the dependency** to your **module-level `build.gradle.kts`** (e.g., `app/build.gradle.kts`):
 
-```
+```gradle
 // app/build.gradle.kts
     dependencies {
-        implementation("com.github.kamyab9k:KamVision:YOUR_LATEST_TAG")
+        implementation("com.github.kamyab9k:KamVision:LATEST_TAG")
     }
-    ```
-    *Replace `YOUR_LATEST_TAG` with the [actual version tag](https://jitpack.io/#kamyab9k/KamVision) you want to use (e.g., `v1.0.1`).
+
 ```
+    
+*Replace `LATEST_TAG` with the [actual version tag](https://jitpack.io/#com.github.kamyab9k/KamVision) you want to use (e.g., `v1.0.1`).
+
 <br/>
 
 Usage
