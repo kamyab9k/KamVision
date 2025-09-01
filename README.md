@@ -5,7 +5,7 @@
 [![](https://jitpack.io/v/kamyab9k/KamVision.svg)](https://jitpack.io/#com.github.kamyab9k/KamVision)
 
 
-**`KamVision`** is an Open-Source library which provides easy access to complex Camera 2 API ([a strategic choice for low-level control in contrast to CameraX](#why-camera2-api-is-chosen-over-camera-x-)) in jetpack compose, you can use internal elements like `Preview` and `Frame Capturing` as a one line method call in your projects.
+**`KamVision`** is an Open-Source library which provides easy access to the complex Camera 2 API ([Strategic choice for low-level control in contrast to CameraX](#why-camera2-api-is-chosen-over-camera-x-)) in Jetpack Compose. You can use internal elements like `Preview` and `Frame Capturing` as a one-line method call in your projects.
                      <p align="center">  ![KamVisionLogo](https://github.com/user-attachments/assets/e30e4da1-c76c-4be3-b715-aac45efee86b)</p>
 
 
@@ -41,7 +41,7 @@ The core of this library is provided by [**Camera2 Api**](https://developer.andr
 - **Flexibility for Complex Use Cases**: If you're building something beyond standard photo/video capture, like custom computer vision pipelines, augmented reality applications, or specialized imaging tools, Camera2's granular control is essential<br>
 
 **The 👎 of Camera2 api**:
-   - It is more complex and time consuming to implement but i've already done it for you ;)
+   - It is more complex and time-consuming to implement, but I've already done it for you ;)
 
 
 <br>
@@ -50,14 +50,14 @@ Main Characteristics
 --------------------
 - Start Camera Preview with only one line function call
 - Stop Camera Preview
-- Switch between front and back Camera Lens
+- Switch between front and back Camera lenses
 - Single frame capturing
 - Multiple frame capturing based on a user-defined number
-- Full compatibality with jetpack compose
+- Full compatibility with Jetpack Compose
 - Fluent UI
 - Optimized with coroutines
 
-#### :dart: Download the demostration of the library usage in a sample Android app [KamVision-Showcase.apk](https://github.com/kamyab9k/KamVision/releases)
+#### :dart: Download the demonstration of the library usage in a sample Android app [KamVision-Showcase.apk](https://github.com/kamyab9k/KamVision/releases)
 
 <br/>
 
@@ -312,7 +312,7 @@ There are several functions you can call with KamVision.
 In addition to the builder functions, `KamVision` receives some configurations. For example:
 
 ```kotlin
-// shows a Preview in jetpack compose AndroidView
+// shows a Preview in Jetpack Compose AndroidView
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { ctx ->
@@ -334,7 +334,7 @@ In addition to the builder functions, `KamVision` receives some configurations. 
 <br/>
 
 
-Read more about these three important topics to better understand the funcionality of this Library:
+Read more about these three important topics to better understand the functionality of this Library:
 
 - [`Camera2`](https://developer.android.com/media/camera/camera2)
 - [`AndroidView`](https://developer.android.com/develop/ui/compose/migrate/interoperability-apis/views-in-compose)
@@ -355,7 +355,7 @@ License
 Copyright 2024 Mohammad Khosravi
 
 Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
+You may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
        http://www.apache.org/licenses/LICENSE-2.0
