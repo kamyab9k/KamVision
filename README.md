@@ -150,7 +150,7 @@ class MainActivity : ComponentActivity() {
 }
 ```
 
-2. Integrate KamVision's Camera Preview"
+2. Integrate KamVision's Camera Preview
 ```kotlin
 @Composable
 fun CameraPreview() {
