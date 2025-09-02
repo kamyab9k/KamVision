@@ -102,7 +102,7 @@ Usage
 -----
 
 `KamVision` makes integrating the Camera2 API into your Jetpack Compose applications simple. Follow these three simple steps to get your camera preview up and running quickly.
-
+Note: This is just a simple setup to get started; you can alter or implement the UI and other parameters based on your project or needs!
 
 1. Request Camera Permissions:
 ```kotlin
