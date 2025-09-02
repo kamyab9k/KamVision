@@ -57,7 +57,7 @@ Main Characteristics
 - Fluent UI
 - Optimized with coroutines
 
-#### :dart: Download the demonstration of the library usage in a sample Android app [KamVision-Showcase.apk](https://github.com/kamyab9k/KamVision/releases)
+#### :dart: Download the demonstration of the library usage in a sample Android app [KamVision-Showcase.apk](https://github.com/kamyab9k/KamVision/releases/download/v1.0.2/KamVision.v1.0.2.apk)
 
 <br/>
 
