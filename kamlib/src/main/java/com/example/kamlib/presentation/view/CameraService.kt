@@ -23,8 +23,6 @@ class CameraService private constructor(
         FrameCaptureManager(textureView, 512, 512, context)
 
     init {
-        // Check if the context is a LifecycleOwner (like an Activity) and add an observer.
-        // This is the magic that connects your camera to the app's lifecycle.
         (context as? LifecycleOwner)?.lifecycle?.addObserver(cameraPreview)
     }
 
@@ -42,6 +40,12 @@ class CameraService private constructor(
 
     fun getCapturedFrames(onFramesCaptured: (frames: List<Bitmap>) -> Unit) {
         frameCaptureManager.getCapturedFrames(onFramesCaptured)
+    }
+
+    // Add the new public method to change flash mode at runtime.
+    fun setFlashMode(mode: Int) {
+        // This is the key: delegate the call to the internal cameraPreview object.
+        cameraPreview.setFlashMode(mode)
     }
 
     fun switchCamera() {
@@ -108,4 +112,3 @@ class CameraService private constructor(
         }
     }
 }
-

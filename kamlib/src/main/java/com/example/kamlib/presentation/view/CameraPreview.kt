@@ -38,10 +38,10 @@ class CameraPreview(
     context: Context,
     private val textureView: TextureView,
     private val isFrontCamera: Boolean = false,
-    private val flashMode: Int?,
+    private var flashMode: Int?, // Make flashMode mutable
     private val autoFocusMode: Int?,
     private val autoBrightnessMode: Int?,
-) : DefaultLifecycleObserver { // <-- CHANGE HERE
+) : DefaultLifecycleObserver {
     private val cameraManager: CameraManager =
         context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
     private var cameraDevice: CameraDevice? = null
@@ -58,6 +58,7 @@ class CameraPreview(
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
     private var isPreviewStopped = false
     private var captureJob: Job? = null
+    private var previewRequestBuilder: CaptureRequest.Builder? = null // Add this line
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
@@ -190,10 +191,10 @@ class CameraPreview(
             scaleTextureView(width, height, previewSize.height, previewSize.width)
             texture?.setDefaultBufferSize(previewSize.width, previewHeight)
             val surface = Surface(texture)
-            val captureRequestBuilder =
+            previewRequestBuilder =
                 cameraDevice?.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-            captureRequestBuilder?.addTarget(surface)
-            captureRequestBuilder?.set(
+            previewRequestBuilder?.addTarget(surface)
+            previewRequestBuilder?.set(
                 CaptureRequest.STATISTICS_FACE_DETECT_MODE,
                 CameraCharacteristics.STATISTICS_FACE_DETECT_MODE_OFF
             )
@@ -206,18 +207,18 @@ class CameraPreview(
                         try {
                             // Apply Auto Focus Mode
                             autoFocusMode?.let { mode ->
-                                captureRequestBuilder?.set(CaptureRequest.CONTROL_AF_MODE, mode)
+                                previewRequestBuilder?.set(CaptureRequest.CONTROL_AF_MODE, mode)
                             }
                             // Apply Auto Brightness Mode
                             autoBrightnessMode?.let { mode ->
-                                captureRequestBuilder?.set(CaptureRequest.CONTROL_AE_MODE, mode)
+                                previewRequestBuilder?.set(CaptureRequest.CONTROL_AE_MODE, mode)
                             }
                             // Apply Flash Mode
                             flashMode?.let { mode ->
-                                captureRequestBuilder?.set(CaptureRequest.FLASH_MODE, mode)
+                                previewRequestBuilder?.set(CaptureRequest.FLASH_MODE, mode)
                             }
 
-                            captureRequestBuilder?.build()
+                            previewRequestBuilder?.build()
                                 ?.let { session.setRepeatingRequest(it, null, backgroundHandler) }
 
                         } catch (e: CameraAccessException) {
@@ -233,6 +234,20 @@ class CameraPreview(
             )
         } catch (e: CameraAccessException) {
             e.printStackTrace()
+        }
+    }
+
+    // Add this new function to change flash mode at runtime
+    fun setFlashMode(mode: Int) {
+        this.flashMode = mode
+        previewRequestBuilder?.set(CaptureRequest.FLASH_MODE, mode)
+        try {
+            // Re-submit the request to apply the change
+            cameraCaptureSession?.setRepeatingRequest(previewRequestBuilder!!.build(), null, backgroundHandler)
+        } catch (e: CameraAccessException) {
+            Log.e(TAG, "Failed to update flash mode: ${e.message}")
+        } catch (e: NullPointerException) {
+            Log.e(TAG, "Camera session or builder is null.")
         }
     }
 
